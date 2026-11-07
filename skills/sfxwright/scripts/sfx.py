@@ -707,9 +707,14 @@ def fade(ch, sr, in_ms, out_ms):
     return ch
 
 
+def remove_dc(c):
+    mean = sum(c) / len(c)
+    return [s - mean for s in c]
+
+
 def tidy(au, head_db=-50.0, tail_db=-60.0, keep_ms=2.0, out_ms=10.0):
     """Remove DC, trim silence at both ends, fade so both ends reach exact zero."""
-    chans = [[s - sum(c) / len(c) for s in c] for c in au.channels]
+    chans = [remove_dc(c) for c in au.channels]
     peak = max(max(abs(s) for s in c) for c in chans) or 1.0
     hi, lo = peak * A.undb(head_db), peak * A.undb(tail_db)
     mono = [max(abs(c[i]) for c in chans) for i in range(au.n)]
@@ -767,7 +772,7 @@ def cmd_edit(a):
         elif a.op == "reverse":
             au = A.Audio(au.sr, [c[::-1] for c in au.channels])
         elif a.op == "dc":
-            au = A.Audio(au.sr, [[s - sum(c) / len(c) for s in c] for c in au.channels])
+            au = A.Audio(au.sr, [remove_dc(c) for c in au.channels])
         elif a.op == "pitch":
             if a.value is None:
                 raise Fail("--value is semitones")

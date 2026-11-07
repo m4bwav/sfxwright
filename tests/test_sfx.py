@@ -3,6 +3,7 @@ import io
 import json
 import sys
 import tempfile
+import time
 import unittest
 from pathlib import Path
 
@@ -107,6 +108,14 @@ class Synth(Base):
         code, res = run("synth", "modal", "--out", self.d / "x.wav", "--param", "material=cheese")
         self.assertEqual(code, 1)
         self.assertIn("material", res["error"])
+
+
+class Speed(Base):
+    def test_tidy_is_linear(self):
+        au = A.Audio(44100, [[0.1] * 44100 * 30])
+        t = time.time()
+        sfx.tidy(au)
+        self.assertLess(time.time() - t, 20)
 
 
 class Sets(Base):
