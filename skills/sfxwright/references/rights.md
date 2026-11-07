@@ -21,6 +21,10 @@ Not legal advice. Checked 2026-11-06; wording changes. `sfx.py ship` applies the
 - **HunyuanVideo-Foley:** not valid in the EU, UK or South Korea; output may not improve other AI models.
 - **Procedural:** no training data, no licence question.
 
+## Recording your own
+
+Bystanders' speech raises privacy, device and app sounds are usually someone's copyrighted design, and places that look public may be private land. Bigger productions may ask for a list of effects with proof of licence (`ship`). Fry (2019), UK practice, not legal advice.
+
 ## Copyright in output
 
 US Copyright Office, Part 2, January 2025: purely AI-generated material is not protected, and prompts alone are not sufficient control. Human selection, arrangement and modification may be protected. So the edit trail in each take has value. How much human control suffices for a short effect is unsettled.

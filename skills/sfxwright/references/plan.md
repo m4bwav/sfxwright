@@ -14,6 +14,10 @@ Spot against locked picture: `at_s`, `sync_point_s` (the moment inside the file 
 
 Write the list anyway, even for three sounds, so the files have a home.
 
+## Question each sound
+
+A lone effect with nothing around it (one car in an otherwise silent street) reads as an effect. Either build the world that makes it ordinary (other cars pass now and then) or cut it. Decide how far the world reaches: next room, building, street, and what each ring adds. Name foreground, middle and background: a bed with a clear foreground voice implies a person who is not there. Spend accuracy where a sound is prominent; a familiar wrong sound can beat an accurate unfamiliar one. Fry (2019), theatre practice and stated as opinion.
+
 ## Footsteps
 
 The brief needs character, weight shift, shoe and exact surface. Plan single hits per surface, then a sequence.
@@ -26,4 +30,4 @@ One low cloth track following movement; special garments apart. Excess gets cut,
 
 Build from a quiet bed plus sparse events per location, not one long take. Practitioner advice, not a measurement.
 
-Sources: Viers, Holman, Rose, Ament, Zdanowicz and Bambrick, Fuesslin in Somberg vol. 3; an r/sounddesign thread on backgrounds.
+Sources: Viers, Holman, Rose, Ament, Zdanowicz and Bambrick, Fuesslin in Somberg vol. 3; Fry; an r/sounddesign thread on backgrounds.
