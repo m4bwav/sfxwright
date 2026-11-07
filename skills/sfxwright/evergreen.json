@@ -1,60 +1,85 @@
 {
- "evergreen": "1.0",
- "name": "sfxwright",
- "kind": "skill",
- "main": "SKILL.md",
- "files": {
-  "research": "RESEARCH.md",
-  "changelog": "CHANGELOG.md",
-  "learnings": "LEARNINGS.md",
-  "tests": "TESTS.md"
- },
- "protocol": "plugin",
- "source": null,
- "topic": "AI and procedural sound effects: models, ComfyUI routes, craft, checks, library licences, store disclosure",
- "tier": "fast",
- "interval_days": 14,
- "last_checked": "2026-11-06",
- "next_due": "2026-11-20",
- "verify_at_use": true,
- "volatile_claims": [
-  {
-   "claim": "Model ranks and licences in references/routes.md and rights.md",
-   "last": "2026-11-06",
-   "every_days": 14
+  "evergreen": "1.0",
+  "name": "sfxwright",
+  "kind": "skill",
+  "main": "SKILL.md",
+  "files": {
+    "research": "RESEARCH.md",
+    "changelog": "CHANGELOG.md",
+    "learnings": "LEARNINGS.md",
+    "tests": "TESTS.md"
   },
-  {
-   "claim": "Steam and itch.io wording in references/rights.md",
-   "last": "2026-11-06",
-   "every_days": 30
+  "protocol": "plugin",
+  "source": null,
+  "topic": "AI and procedural sound effects: models, ComfyUI routes, craft, checks, library licences, store disclosure",
+  "tier": "fast",
+  "interval_days": 14,
+  "last_checked": "2026-11-06",
+  "next_due": "2026-11-20",
+  "verify_at_use": true,
+  "volatile_claims": [
+    {
+      "claim": "Model ranks and licences in references/routes.md and rights.md",
+      "last": "2026-11-06",
+      "every_days": 14
+    },
+    {
+      "claim": "Steam and itch.io wording in references/rights.md",
+      "last": "2026-11-06",
+      "every_days": 30
+    }
+  ],
+  "contradiction": null,
+  "events": [],
+  "streak": {
+    "quiet": 0,
+    "pinned_min": 0,
+    "pinned_max": 0,
+    "vau_quiet": 0
+  },
+  "history": [
+    {
+      "date": "2026-11-06",
+      "m": null,
+      "interval_after": 14,
+      "note": "created"
+    }
+  ],
+  "counts": {
+    "learnings": 2,
+    "changes": 1,
+    "research": 2,
+    "tests": 0
+  },
+  "consolidate_every": 25,
+  "scout": {
+    "beat": "ai-sfx",
+    "status": "linked",
+    "date": "2026-11-06"
+  },
+  "worth": {
+    "checked": "2026-11-07",
+    "skills": {
+      "sfxwright": {
+        "verdict": "CUT",
+        "why": "no gain beyond noise (+8 points (noise margin 16)) at 1.72x the cost",
+        "body_tokens": 1496,
+        "listing_tokens": 239,
+        "specific_share": 0.65,
+        "delta": 0.08,
+        "cost_ratio": 1.72,
+        "modes": [
+          4
+        ],
+        "gaps": 0,
+        "checked": "2026-11-07",
+        "uses": {
+          "days": 60,
+          "interactive": 0,
+          "subagent": 0,
+          "headless": 30
+        }
+      }
+    }
   }
- ],
- "contradiction": null,
- "events": [],
- "streak": {
-  "quiet": 0,
-  "pinned_min": 0,
-  "pinned_max": 0,
-  "vau_quiet": 0
- },
- "history": [
-  {
-   "date": "2026-11-06",
-   "m": null,
-   "interval_after": 14,
-   "note": "created"
-  }
- ],
- "counts": {
-  "learnings": 2,
-  "changes": 1,
-  "research": 2,
-  "tests": 0
- },
- "consolidate_every": 25,
- "scout": {
-  "beat": "ai-sfx",
-  "status": "linked",
-  "date": "2026-11-06"
- }
 }

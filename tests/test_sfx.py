@@ -44,6 +44,13 @@ class Base(unittest.TestCase):
 
 
 class Wav(Base):
+    def test_synth_list_names_recipes_and_params(self):
+        code, res = run("synth", "list")
+        self.assertEqual(code, 0)
+        self.assertIn("modal", res["recipes"])
+        self.assertIn("material", res["recipes"]["modal"]["params"])
+        self.assertIn("wood", res["recipes"]["modal"]["materials"])
+
     def test_round_trip_bits(self):
         au = A.Audio(44100, [[0.0, 0.5, -0.5, 0.25], [0.1, 0.2, 0.3, 0.4]])
         for bits in (16, 24):

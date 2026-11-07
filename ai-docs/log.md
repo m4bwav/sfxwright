@@ -26,3 +26,7 @@ Read the fish and layer listen, unblinded: crate parts, sword seed 1, boom seed 
 ## 2026-11-07, session 6
 
 Tested the attack skip lead: it does not limit body clicks (numbers in thresholds.md), CLICK unchanged. Another session distilled Fry (0.1.6). Distilled the rest in part: Miranda (excitation and stretching moves applied), Reveillac (one line; a catalogue of music effects), Steiglitz (nothing taken). 0.1.7. Script and results in sfxwright-lab/clickcal.
+
+## 2026-11-07, session 7
+
+Read the waiting page. Listed sfxwright in mark-local (`Ai/.claude-plugin/marketplace.json`; the install stays sfxwright@sfxwright). Wrote `roomtone/record_tone.cmd` in the lab for Mark's recording. Rewrote the value cases to be graded on results (`evals/check_sfx.py`, `build_fixtures.py`). A one-case trial found the baseline read `sfxwright` in its temp folder name, searched the disk and used the installed plugin: fixed in evergreen-protocol PR #42, v0.18.5, installed. Earlier baselines may share this, including voicewright's KEEP. Added `synth list`. Full A/B: CUT, numbers in TESTS.md T-20261107-1. Total spend about $19.70 against about $14 approved: `--max-usd 11` only stops top-ups, not the base runs. 0.1.8.

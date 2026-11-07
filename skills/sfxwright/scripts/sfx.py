@@ -50,7 +50,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import sfx_audio as A  # noqa: E402
 import sfx_synth as S  # noqa: E402
 
-VERSION = "0.1.7"
+VERSION = "0.1.8"
 SCHEMA = 1
 KINDS = ("one-shot", "loop", "ambience", "sequence", "stinger", "ui")
 STATUSES = ("planned", "rendered", "picked", "finished", "rejected")
@@ -438,6 +438,10 @@ def cmd_gen(a):
 
 
 def cmd_synth(a):
+    if a.recipe == "list":
+        return {"ok": True, "recipes": S.describe()}
+    if not a.out:
+        raise Fail("synth needs --out")
     params = {}
     for kv in a.param or []:
         k, _, v = kv.partition("=")
@@ -1365,7 +1369,7 @@ def build_parser():
     c.add_argument("--budget", type=int)
     c = add("synth", cmd_synth)
     c.add_argument("recipe")
-    c.add_argument("--out", required=True, help="a .wav file for one take, or a folder")
+    c.add_argument("--out", help="a .wav file for one take, or a folder")
     c.add_argument("--name")
     c.add_argument("--takes", type=int, default=1)
     c.add_argument("--seed", type=int, default=1)

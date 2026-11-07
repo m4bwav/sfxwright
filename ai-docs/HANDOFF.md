@@ -1,16 +1,17 @@
 # sfxwright handoff
 
-State 2026-11-07, end of session 6. Public repo, v0.1.7, wiki at 0.1.5 (0.1.6 and 0.1.7 changed references only).
+State 2026-11-07, end of session 7. Public repo, v0.1.8, wiki at 0.1.5 (0.1.8 adds `synth list`, which the wiki lacks).
 
 ## Waiting on Mark
-The first three are on the page `sfxwright-lab/ask/sfx-waiting-1` (`python askwright/skills/askwright/scripts/ask.py read <that folder>`; `serve --detach` if down).
-- Thirty seconds of real room tone, twice, same room, as a phone or recorder file in `Ai/sfxwright-lab/roomtone/`: `check --tone-match` has only met planted noise.
-- Paid `evergreen-worth` A/B (about $14 last time): yes or no.
-- What "Mark's plugin sets" means: no such list found; sfxwright@sfxwright is installed. The nearest is Ai/.claude-plugin/marketplace.json (mark-local), which also omits voicewright.
+- `sfxwright-lab/ask/sfx-worth-1`: worth verdict CUT, 96% with against 88% without at 1.72x cost (TESTS.md T-20261107-1). Keep, trim or retire is his ruling. Nothing changes until he answers.
+- Room tone: double-click `Ai/sfxwright-lab/roomtone/record_tone.cmd` (webcam mic, about 70 s) or save two phone files there. Then run `check --tone-match` on them, a fill against its neighbour, and write the result in thresholds.md.
 - Optional: books still missing, `books/sfx-wanted-books.md`.
 
 ## Owed, in order
-1. Evergreen refresh due 2026-11-20.
+1. Act on the worth answer. If trimming: the three savings in LEARNINGS.md, then rerun only the changed cases, one run first.
+2. Wiki: add `synth list`.
+3. Evergreen refresh due 2026-11-20.
+4. voicewright's worth KEEP may have a contaminated baseline (run folder named the skill; fixed in evergreen 0.18.5). Its session should grep its without-arm transcripts for `voicewright` before rerunning anything.
 
 CLICK stays weak; the attack skip lead is closed (thresholds.md). No other detector is planned unless a listen shows missed clicks matter.
 
