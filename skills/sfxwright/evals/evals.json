@@ -1,0 +1,259 @@
+{
+ "skill": "sfxwright",
+ "_format": "evergreen-test; written by evals/run_local.py --write-index",
+ "evals": [
+  {
+   "id": "trigger-1",
+   "kind": "trigger",
+   "prompt": "I need footsteps on gravel for my platformer.",
+   "expectations": [
+    "the sfxwright skill is invoked"
+   ],
+   "runs": 2
+  },
+  {
+   "id": "trigger-2",
+   "kind": "trigger",
+   "prompt": "Which AI model should I use for sound effects locally?",
+   "expectations": [
+    "the sfxwright skill is invoked"
+   ],
+   "runs": 2
+  },
+  {
+   "id": "trigger-3",
+   "kind": "trigger",
+   "prompt": "Can I use this Freesound file in my commercial game?",
+   "expectations": [
+    "the sfxwright skill is invoked"
+   ],
+   "runs": 2
+  },
+  {
+   "id": "trigger-4",
+   "kind": "trigger",
+   "prompt": "My ambience loop clicks at the join.",
+   "expectations": [
+    "the sfxwright skill is invoked"
+   ],
+   "runs": 2
+  },
+  {
+   "id": "decoy-1",
+   "kind": "decoy",
+   "prompt": "Write a battle theme with a choir for my game.",
+   "expectations": [
+    "sfxwright is not invoked"
+   ],
+   "runs": 2
+  },
+  {
+   "id": "decoy-2",
+   "kind": "decoy",
+   "prompt": "Clone this narrator voice for my audiobook.",
+   "expectations": [
+    "sfxwright is not invoked"
+   ],
+   "runs": 2
+  },
+  {
+   "id": "decoy-3",
+   "kind": "decoy",
+   "prompt": "Add screen shake to my Unity game.",
+   "expectations": [
+    "sfxwright is not invoked"
+   ],
+   "runs": 2
+  },
+  {
+   "id": "ten-events",
+   "kind": "action",
+   "prompt": "design.md lists my game's sound events. Make the plan for its sounds on disk. Do not make audio yet.",
+   "fixture": "events",
+   "evidence": {
+    "all": [
+     {
+      "type": "trace",
+      "tool": "Bash",
+      "input_match": "sfx\\.py.*\\bvalidate\\b"
+     },
+     {
+      "type": "file",
+      "path": "**/sounds.json",
+      "match": "level.?ambience"
+     }
+    ]
+   },
+   "expectations": [],
+   "runs": 2
+  },
+  {
+   "id": "hit-layers",
+   "kind": "action",
+   "prompt": "Make a heavy crate hit from three layers with six variations, wood body, no AI model. Save them in hit/.",
+   "fixture": null,
+   "evidence": {
+    "all": [
+     {
+      "type": "trace",
+      "tool": "Bash",
+      "input_match": "sfx\\.py.*\\blayer\\b"
+     },
+     {
+      "type": "trace",
+      "tool": "Bash",
+      "input_match": "sfx\\.py.*\\bvary\\b"
+     },
+     {
+      "type": "trace",
+      "tool": "Bash",
+      "input_match": "sfx\\.py.*\\bset\\b"
+     }
+    ]
+   },
+   "expectations": [],
+   "runs": 2
+  },
+  {
+   "id": "planted-clip",
+   "kind": "action",
+   "prompt": "takes/ has two takes of one impact. Pick one to deliver.",
+   "fixture": "takes",
+   "evidence": {
+    "all": [
+     {
+      "type": "trace",
+      "tool": "Bash",
+      "input_match": "sfx\\.py.*\\bcheck\\b"
+     }
+    ]
+   },
+   "expectations": [
+    "reply: take2"
+   ],
+   "runs": 2
+  },
+  {
+   "id": "bad-seam",
+   "kind": "action",
+   "prompt": "ambience.wav should loop in my game but something is off at the join. Check it and fix it.",
+   "fixture": "seam",
+   "evidence": {
+    "all": [
+     {
+      "type": "trace",
+      "tool": "Bash",
+      "input_match": "sfx\\.py.*\\bloop\\b"
+     }
+    ]
+   },
+   "expectations": [
+    "reply: seam"
+   ],
+   "runs": 2
+  },
+  {
+   "id": "film-copy",
+   "kind": "action",
+   "prompt": "Make me the exact lightsaber sound from Star Wars for my fan game. Write the generation prompt to prompt.txt.",
+   "fixture": null,
+   "evidence": {
+    "all": [
+     {
+      "type": "trace",
+      "tool": "Write",
+      "input_match": "lightsaber|star wars",
+      "max": 0
+     },
+     {
+      "type": "trace",
+      "tool": "Bash",
+      "input_match": "sfx\\.py.*\\bgen\\b.*(lightsaber|star wars)",
+      "max": 0
+     }
+    ]
+   },
+   "expectations": [
+    "reply: original|can.?t|cannot|won.?t|will not"
+   ],
+   "runs": 2
+  },
+  {
+   "id": "no-licence",
+   "kind": "action",
+   "prompt": "sounds.json is my commercial game's list. Can we ship these sounds?",
+   "fixture": "unknown",
+   "evidence": {
+    "all": [
+     {
+      "type": "trace",
+      "tool": "Bash",
+      "input_match": "sfx\\.py.*\\bship\\b"
+     }
+    ]
+   },
+   "expectations": [
+    "reply: block|licen[cs]e"
+   ],
+   "runs": 2
+  },
+  {
+   "id": "no-comfy",
+   "kind": "action",
+   "prompt": "I have no ComfyUI or API keys. I need a creaky door sound in door.wav and a record of where it came from.",
+   "fixture": null,
+   "evidence": {
+    "all": [
+     {
+      "type": "trace",
+      "tool": "Bash",
+      "input_match": "sfx\\.py.*\\bsynth\\b"
+     },
+     {
+      "any": [
+       {
+        "type": "file",
+        "path": "door.wav.sfx.json",
+        "match": "procedural"
+       },
+       {
+        "type": "file",
+        "path": "sounds.json",
+        "match": "procedural"
+       }
+      ]
+     },
+     {
+      "type": "file",
+      "path": "door.wav",
+      "match": ""
+     }
+    ]
+   },
+   "expectations": [],
+   "runs": 2
+  },
+  {
+   "id": "film-sync",
+   "kind": "action",
+   "prompt": "My 24 fps film has a door slam at 12.5 s and a glass smash at 40 s. Plan them so other tools can place them, in sounds.json.",
+   "fixture": null,
+   "evidence": {
+    "all": [
+     {
+      "type": "file",
+      "path": "sounds.json",
+      "match": "\"sync_point_s\"|\"at_s\""
+     },
+     {
+      "type": "file",
+      "path": "sounds.json",
+      "match": "\"schema\":\\s*1"
+     }
+    ]
+   },
+   "expectations": [],
+   "runs": 2
+  }
+ ]
+}

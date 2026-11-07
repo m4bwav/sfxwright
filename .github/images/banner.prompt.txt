@@ -1,0 +1,3 @@
+wide cinematic painting of a foley stage workbench at night, a wooden crate, gravel tray, old leather boots, a metal chain and a coconut shell under warm lamp light, one vintage microphone on a stand in the foreground, bright colorful sound waveforms and sparks rising from the objects into the dark room, painterly, no people, no text, no letters
+
+Model: Z-Image Turbo, workflow banner.workflow.api.json, seed 4242, 1536x640, 2026-11-06.
