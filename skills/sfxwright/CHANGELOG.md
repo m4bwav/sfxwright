@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.8, 2026-11-07
+
+`synth list` prints every recipe, its parameters and materials. Because: the first worth A/B runs read `sfx.py` source to find them and one hit its turn cap. Evals are now graded on results by `evals/check_sfx.py`, not on calling `sfx.py`; routes stay as a separate check in `run_local.py`.
+
 ## 0.1.7, 2026-11-07
 
 Reference only. `plan.md` gains Name the excitation and `edit.md` Stretching without resampling, from Miranda, *Computer Sound Design*, plus a line from Reveillac. `thresholds.md` records the attack skip test: no change to CLICK. Steiglitz read and nothing taken.

@@ -5,6 +5,7 @@ from notes; no patches are ported. Retro recipes are a small original take on th
 is for a blind listen to decide: see references/routes.md.
 """
 import math
+import inspect
 import random
 
 
@@ -409,6 +410,17 @@ def retro(sr, rng, kind="coin"):
 
 RECIPES = {"shaker": shaker, "modal": modal, "footstep": footstep, "click": click, "switch": switch, "beep": beep, "wind": wind,
            "fire": fire, "explosion": explosion, "whoosh": whoosh, "creak": creak, "retro": retro}
+
+
+def describe():
+    """Every recipe with its parameters and first doc line, so nobody has to read this file."""
+    out = {}
+    for name, fn in RECIPES.items():
+        sig = inspect.signature(fn)
+        doc = (fn.__doc__ or "").strip().splitlines()
+        out[name] = {"params": {k: v.default for k, v in sig.parameters.items() if k not in ("sr", "rng")}, "does": doc[0] if doc else ""}
+    out["modal"]["materials"] = sorted(MATERIALS)
+    return out
 
 
 def render(name, sr=44100, seed=1, **params):

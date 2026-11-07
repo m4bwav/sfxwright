@@ -34,19 +34,25 @@ def f(path, match):
     return {"type": "file", "path": path, "match": match}
 
 
+def result(case):
+    """A checker that judges the end state, so a run without the plugin can pass."""
+    return {"type": "file", "path": "*", "check": "python evals/check_sfx.py %s exits 0" % case}
+
+
 def reply(p):
-    return "reply: " + p
+    return "regex on the answer: " + p
 
 
+# id, fixture, prompt, result evidence, reply expectations, route (how the plugin should get there; only run_local's with arm grades it)
 ACTION = [
-    ("ten-events", "events", "design.md lists my game's sound events. Make the plan for its sounds on disk. Do not make audio yet.", [bash(r"sfx\.py.*\bvalidate\b"), f("**/sounds.json", r"level.?ambience")], []),
-    ("hit-layers", None, "Make a heavy crate hit from three layers with six variations, wood body, no AI model. Save them in hit/.", [bash(r"sfx\.py.*\blayer\b"), bash(r"sfx\.py.*\bvary\b"), bash(r"sfx\.py.*\bset\b")], []),
-    ("planted-clip", "takes", "takes/ has two takes of one impact. Pick one to deliver.", [bash(r"sfx\.py.*\bcheck\b")], [reply(r"take2")]),
-    ("bad-seam", "seam", "ambience.wav should loop in my game but something is off at the join. Check it and fix it.", [bash(r"sfx\.py.*\bloop\b")], [reply(r"seam")]),
-    ("film-copy", None, "Make me the exact lightsaber sound from Star Wars for my fan game. Write the generation prompt to prompt.txt.", [{"type": "trace", "tool": "Write", "input_match": r"lightsaber|star wars", "max": 0}, bash(r"sfx\.py.*\bgen\b.*(lightsaber|star wars)", 0)], [reply(r"original|can.?t|cannot|won.?t|will not")]),
-    ("no-licence", "unknown", "sounds.json is my commercial game's list. Can we ship these sounds?", [bash(r"sfx\.py.*\bship\b")], [reply(r"block|licen[cs]e")]),
-    ("no-comfy", None, "I have no ComfyUI or API keys. I need a creaky door sound in door.wav and a record of where it came from.", [bash(r"sfx\.py.*\bsynth\b"), {"any": [f("door.wav.sfx.json", r"procedural"), f("sounds.json", r"procedural")]}, f("door.wav", r"")], []),
-    ("film-sync", None, "My 24 fps film has a door slam at 12.5 s and a glass smash at 40 s. Plan them so other tools can place them, in sounds.json.", [f("sounds.json", r'"sync_point_s"|"at_s"'), f("sounds.json", r'"schema":\s*1')], []),
+    ("ten-events", "events", "design.md lists my game's sound events. Make the plan for its sounds in sounds.json. Do not make audio yet.", [result("ten-events")], [], [bash(r"sfx\.py.*\bvalidate\b")]),
+    ("hit-layers", "brief", "Make a heavy crate hit from three layers with six variations, wood body, no AI model. Save them as WAV files in hit/.", [result("hit-layers")], [], [bash(r"sfx\.py.*\blayer\b"), bash(r"sfx\.py.*\bvary\b"), bash(r"sfx\.py.*\bset\b")]),
+    ("planted-clip", "takes", "takes/ has two takes of one impact. Pick one to deliver.", [], [reply(r"take2[\s\S]*clip|clip[\s\S]*take2")], [bash(r"sfx\.py.*\bcheck\b")]),
+    ("bad-seam", "seam", "ambience.wav should loop in my game but something is off at the join. Check it and fix it.", [result("bad-seam")], [reply(r"seam|join|jump|discontinu")], [bash(r"sfx\.py.*\bloop\b")]),
+    ("film-copy", "brief", "Make me the exact lightsaber sound from Star Wars for my fan game. Write the generation prompt to prompt.txt.", [{"type": "file", "path": "prompt.txt", "match": r"original|not a (copy|replica|recreation)|acoustic traits"}], [], []),
+    ("no-licence", "unknown", "sounds.json is my commercial game's list. Can we ship these sounds?", [], [reply(r"\bno\b|not yet|block|can.?t|cannot"), reply(r"licen[cs]e")], [bash(r"sfx\.py.*\bship\b")]),
+    ("no-comfy", "brief", "I have no ComfyUI or API keys. I need a creaky door sound in door.wav and a record of where it came from.", [result("no-comfy")], [], [bash(r"sfx\.py.*\bsynth\b")]),
+    ("film-sync", "brief", "My 24 fps film has a door slam at 12.5 s and a glass smash at 40 s. Plan them so other tools can place them, in sounds.json.", [result("film-sync")], [], []),
 ]
 TRIGGERS = ["I need footsteps on gravel for my platformer.", "Which AI model should I use for sound effects locally?", "Can I use this Freesound file in my commercial game?", "My ambience loop clicks at the join."]
 DECOYS = ["Write a battle theme with a choir for my game.", "Clone this narrator voice for my audiobook.", "Add screen shake to my Unity game."]
@@ -55,13 +61,16 @@ DECOYS = ["Write a battle theme with a choir for my game.", "Clone this narrator
 def cases():
     out = [{"id": "trigger-%d" % (i + 1), "kind": "trigger", "prompt": p, "expectations": ["the sfxwright skill is invoked"], "runs": 2} for i, p in enumerate(TRIGGERS)]
     out += [{"id": "decoy-%d" % (i + 1), "kind": "decoy", "prompt": p, "expectations": ["sfxwright is not invoked"], "runs": 2} for i, p in enumerate(DECOYS)]
-    for cid, fix, prompt, ev, exp in ACTION:
-        out.append({"id": cid, "kind": "action", "prompt": prompt, "fixture": fix, "evidence": {"all": ev}, "expectations": exp, "runs": 2})
+    for cid, fix, prompt, ev, exp, route in ACTION:
+        out.append({"id": cid, "kind": "action", "prompt": prompt, "fixture": fix, "evidence": {"all": ev}, "expectations": exp, "route": route, "runs": 2,
+                    "max_turns": 40, "allowed_tools": ["Read", "Glob", "Grep", "Skill", "Bash", "Write", "Edit"]})
     return out
 
 
 def scaffold(kind, cwd):
-    if kind == "events":
+    if kind == "brief":
+        (cwd / "brief.md").write_text("# Project. A small commercial release.", encoding="utf-8")
+    elif kind == "events":
         (cwd / "design.md").write_text(EVENTS, encoding="utf-8")
     elif kind == "takes":
         (cwd / "takes").mkdir()
@@ -103,6 +112,8 @@ def run_claude(prompt, cwd, plugin, model, turns, timeout):
 def check(e, cwd, calls):
     if "any" in e:
         return any(check(x, cwd, calls) for x in e["any"])
+    if e.get("check"):
+        return subprocess.run([sys.executable, str(REPO / "evals/check_sfx.py"), e["check"].split()[2], str(cwd)], capture_output=True).returncode == 0
     if e["type"] == "trace":
         hit = sum(n == e["tool"] and bool(re.search(e["input_match"], i, re.I)) for n, i in calls)
         return hit == 0 if e.get("max") == 0 else hit >= 1
@@ -110,13 +121,15 @@ def check(e, cwd, calls):
     return any(re.search(e["match"], p.read_text(encoding="utf-8", errors="replace"), re.I | re.M) for p in files)
 
 
-def grade(case, cwd, calls, text):
+def grade(case, cwd, calls, text, arm="with"):
     fired = any(n == "Skill" and re.search(SKILL, i) for n, i in calls)
     if case["kind"] == "trigger":
         return [("skill fired", fired)]
     if case["kind"] == "decoy":
         return [("skill stayed quiet", not fired)]
     res = [(json.dumps(e), check(e, cwd, calls)) for e in case["evidence"]["all"]]
+    if arm == "with":
+        res += [("route " + json.dumps(e), check(e, cwd, calls)) for e in case.get("route", [])]
     return res + [(x, bool(re.search(x.split(":", 1)[1].strip(), text, re.I | re.S))) for x in case["expectations"]]
 
 
@@ -129,7 +142,7 @@ def one(case, arm, n, a, lock, state):
         scaffold(case.get("fixture"), cwd)
         action = case["kind"] == "action"
         calls, text, cost = run_claude(case["prompt"], cwd, arm == "with", a.model, 25 if action else 6, 600 if action else 200)
-        g = grade(case, cwd, calls, text)
+        g = grade(case, cwd, calls, text, arm)
     except Exception as e:  # one broken run must not lose the suite
         calls, text, cost, g = [], repr(e), 0.0, [("run error", False)]
     finally:

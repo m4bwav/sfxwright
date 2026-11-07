@@ -6,3 +6,4 @@ __pycache__/
 *.ogg
 .github/images/banner.png
 evals/results/
+skills/sfxwright/evals/fixtures/*/

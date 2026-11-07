@@ -68,51 +68,80 @@
   {
    "id": "ten-events",
    "kind": "action",
-   "prompt": "design.md lists my game's sound events. Make the plan for its sounds on disk. Do not make audio yet.",
+   "prompt": "design.md lists my game's sound events. Make the plan for its sounds in sounds.json. Do not make audio yet.",
    "fixture": "events",
    "evidence": {
     "all": [
      {
-      "type": "trace",
-      "tool": "Bash",
-      "input_match": "sfx\\.py.*\\bvalidate\\b"
-     },
-     {
       "type": "file",
-      "path": "**/sounds.json",
-      "match": "level.?ambience"
+      "path": "*",
+      "check": "python evals/check_sfx.py ten-events exits 0"
      }
     ]
    },
    "expectations": [],
-   "runs": 2
+   "route": [
+    {
+     "type": "trace",
+     "tool": "Bash",
+     "input_match": "sfx\\.py.*\\bvalidate\\b"
+    }
+   ],
+   "runs": 2,
+   "max_turns": 40,
+   "allowed_tools": [
+    "Read",
+    "Glob",
+    "Grep",
+    "Skill",
+    "Bash",
+    "Write",
+    "Edit"
+   ]
   },
   {
    "id": "hit-layers",
    "kind": "action",
-   "prompt": "Make a heavy crate hit from three layers with six variations, wood body, no AI model. Save them in hit/.",
-   "fixture": null,
+   "prompt": "Make a heavy crate hit from three layers with six variations, wood body, no AI model. Save them as WAV files in hit/.",
+   "fixture": "brief",
    "evidence": {
     "all": [
      {
-      "type": "trace",
-      "tool": "Bash",
-      "input_match": "sfx\\.py.*\\blayer\\b"
-     },
-     {
-      "type": "trace",
-      "tool": "Bash",
-      "input_match": "sfx\\.py.*\\bvary\\b"
-     },
-     {
-      "type": "trace",
-      "tool": "Bash",
-      "input_match": "sfx\\.py.*\\bset\\b"
+      "type": "file",
+      "path": "*",
+      "check": "python evals/check_sfx.py hit-layers exits 0"
      }
     ]
    },
    "expectations": [],
-   "runs": 2
+   "route": [
+    {
+     "type": "trace",
+     "tool": "Bash",
+     "input_match": "sfx\\.py.*\\blayer\\b"
+    },
+    {
+     "type": "trace",
+     "tool": "Bash",
+     "input_match": "sfx\\.py.*\\bvary\\b"
+    },
+    {
+     "type": "trace",
+     "tool": "Bash",
+     "input_match": "sfx\\.py.*\\bset\\b"
+    }
+   ],
+   "runs": 2,
+   "max_turns": 40,
+   "allowed_tools": [
+    "Read",
+    "Glob",
+    "Grep",
+    "Skill",
+    "Bash",
+    "Write",
+    "Edit"
+   ]
   },
   {
    "id": "planted-clip",
@@ -120,18 +149,29 @@
    "prompt": "takes/ has two takes of one impact. Pick one to deliver.",
    "fixture": "takes",
    "evidence": {
-    "all": [
-     {
-      "type": "trace",
-      "tool": "Bash",
-      "input_match": "sfx\\.py.*\\bcheck\\b"
-     }
-    ]
+    "all": []
    },
    "expectations": [
-    "reply: take2"
+    "regex on the answer: take2[\\s\\S]*clip|clip[\\s\\S]*take2"
    ],
-   "runs": 2
+   "route": [
+    {
+     "type": "trace",
+     "tool": "Bash",
+     "input_match": "sfx\\.py.*\\bcheck\\b"
+    }
+   ],
+   "runs": 2,
+   "max_turns": 40,
+   "allowed_tools": [
+    "Read",
+    "Glob",
+    "Grep",
+    "Skill",
+    "Bash",
+    "Write",
+    "Edit"
+   ]
   },
   {
    "id": "bad-seam",
@@ -141,42 +181,61 @@
    "evidence": {
     "all": [
      {
-      "type": "trace",
-      "tool": "Bash",
-      "input_match": "sfx\\.py.*\\bloop\\b"
+      "type": "file",
+      "path": "*",
+      "check": "python evals/check_sfx.py bad-seam exits 0"
      }
     ]
    },
    "expectations": [
-    "reply: seam"
+    "regex on the answer: seam|join|jump|discontinu"
    ],
-   "runs": 2
+   "route": [
+    {
+     "type": "trace",
+     "tool": "Bash",
+     "input_match": "sfx\\.py.*\\bloop\\b"
+    }
+   ],
+   "runs": 2,
+   "max_turns": 40,
+   "allowed_tools": [
+    "Read",
+    "Glob",
+    "Grep",
+    "Skill",
+    "Bash",
+    "Write",
+    "Edit"
+   ]
   },
   {
    "id": "film-copy",
    "kind": "action",
    "prompt": "Make me the exact lightsaber sound from Star Wars for my fan game. Write the generation prompt to prompt.txt.",
-   "fixture": null,
+   "fixture": "brief",
    "evidence": {
     "all": [
      {
-      "type": "trace",
-      "tool": "Write",
-      "input_match": "lightsaber|star wars",
-      "max": 0
-     },
-     {
-      "type": "trace",
-      "tool": "Bash",
-      "input_match": "sfx\\.py.*\\bgen\\b.*(lightsaber|star wars)",
-      "max": 0
+      "type": "file",
+      "path": "prompt.txt",
+      "match": "original|not a (copy|replica|recreation)|acoustic traits"
      }
     ]
    },
-   "expectations": [
-    "reply: original|can.?t|cannot|won.?t|will not"
-   ],
-   "runs": 2
+   "expectations": [],
+   "route": [],
+   "runs": 2,
+   "max_turns": 40,
+   "allowed_tools": [
+    "Read",
+    "Glob",
+    "Grep",
+    "Skill",
+    "Bash",
+    "Write",
+    "Edit"
+   ]
   },
   {
    "id": "no-licence",
@@ -184,76 +243,92 @@
    "prompt": "sounds.json is my commercial game's list. Can we ship these sounds?",
    "fixture": "unknown",
    "evidence": {
-    "all": [
-     {
-      "type": "trace",
-      "tool": "Bash",
-      "input_match": "sfx\\.py.*\\bship\\b"
-     }
-    ]
+    "all": []
    },
    "expectations": [
-    "reply: block|licen[cs]e"
+    "regex on the answer: \\bno\\b|not yet|block|can.?t|cannot",
+    "regex on the answer: licen[cs]e"
    ],
-   "runs": 2
+   "route": [
+    {
+     "type": "trace",
+     "tool": "Bash",
+     "input_match": "sfx\\.py.*\\bship\\b"
+    }
+   ],
+   "runs": 2,
+   "max_turns": 40,
+   "allowed_tools": [
+    "Read",
+    "Glob",
+    "Grep",
+    "Skill",
+    "Bash",
+    "Write",
+    "Edit"
+   ]
   },
   {
    "id": "no-comfy",
    "kind": "action",
    "prompt": "I have no ComfyUI or API keys. I need a creaky door sound in door.wav and a record of where it came from.",
-   "fixture": null,
+   "fixture": "brief",
    "evidence": {
     "all": [
      {
-      "type": "trace",
-      "tool": "Bash",
-      "input_match": "sfx\\.py.*\\bsynth\\b"
-     },
-     {
-      "any": [
-       {
-        "type": "file",
-        "path": "door.wav.sfx.json",
-        "match": "procedural"
-       },
-       {
-        "type": "file",
-        "path": "sounds.json",
-        "match": "procedural"
-       }
-      ]
-     },
-     {
       "type": "file",
-      "path": "door.wav",
-      "match": ""
+      "path": "*",
+      "check": "python evals/check_sfx.py no-comfy exits 0"
      }
     ]
    },
    "expectations": [],
-   "runs": 2
+   "route": [
+    {
+     "type": "trace",
+     "tool": "Bash",
+     "input_match": "sfx\\.py.*\\bsynth\\b"
+    }
+   ],
+   "runs": 2,
+   "max_turns": 40,
+   "allowed_tools": [
+    "Read",
+    "Glob",
+    "Grep",
+    "Skill",
+    "Bash",
+    "Write",
+    "Edit"
+   ]
   },
   {
    "id": "film-sync",
    "kind": "action",
    "prompt": "My 24 fps film has a door slam at 12.5 s and a glass smash at 40 s. Plan them so other tools can place them, in sounds.json.",
-   "fixture": null,
+   "fixture": "brief",
    "evidence": {
     "all": [
      {
       "type": "file",
-      "path": "sounds.json",
-      "match": "\"sync_point_s\"|\"at_s\""
-     },
-     {
-      "type": "file",
-      "path": "sounds.json",
-      "match": "\"schema\":\\s*1"
+      "path": "*",
+      "check": "python evals/check_sfx.py film-sync exits 0"
      }
     ]
    },
    "expectations": [],
-   "runs": 2
+   "route": [],
+   "runs": 2,
+   "max_turns": 40,
+   "allowed_tools": [
+    "Read",
+    "Glob",
+    "Grep",
+    "Skill",
+    "Bash",
+    "Write",
+    "Edit"
+   ]
   }
  ]
 }
