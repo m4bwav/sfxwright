@@ -35,7 +35,7 @@ The ElevenLabs partner node may offer only v2, removed 2027-03-01. v3 needs the 
 
 ## Recipes (`synth`, no model)
 
-`shaker, modal (material=wood|metal|glass|stone|plastic), footstep (surface=gravel|wood|stone|metal|grass|snow, state=walk|run|sneak, weight), click, switch, beep, wind (gentle=yes), fire, explosion (distance), whoosh, creak, retro (kind=coin|laser|jump|hit|explode|powerup|blip)`. Pass with `--param name=value`. Same seed, same file. In the listen, `retro` laser and `fire` beat the models; wood, metal, switch, gravel step, gentle wind and explosion lost. So use `retro` and `fire` by choice and the others as the no-model fallback.
+`shaker, modal (material=wood|metal|glass|stone|plastic), footstep (surface=gravel|wood|stone|metal|grass|snow, state=walk|run|sneak, weight), click, switch, beep, wind (gentle=yes), fire, explosion (distance), whoosh, creak, retro (kind=coin|laser|jump|hit|explode|powerup|blip), bubbles (size, rate), rain (surface=hard|water|mixed), motor (rpm, poles, brush), cricket`. The last four (Farnell ch. 35-50, 0.1.12) have not been in a blind listen; use them as no-model drafts and ambience beds. Pass with `--param name=value`. Same seed, same file. In the listen, `retro` laser and `fire` beat the models; wood, metal, switch, gravel step, gentle wind and explosion lost. So use `retro` and `fire` by choice and the others as the no-model fallback.
 
 ## Musicwright boundary
 

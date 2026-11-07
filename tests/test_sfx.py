@@ -116,12 +116,23 @@ class Finish(Base):
 class Synth(Base):
     def test_every_recipe_clean_and_deterministic(self):
         for name in sorted(Y.RECIPES):
-            kw = {"seconds": 1.0} if name in ("wind", "fire", "explosion") else {}
+            kw = {"seconds": 1.0} if name in ("wind", "fire", "explosion", "bubbles", "rain", "motor", "cricket") else {}
             with self.subTest(name=name):
                 x = Y.render(name, seed=3, **kw)
                 self.assertEqual(x, Y.render(name, seed=3, **kw))
                 self.assertLess(max(abs(v) for v in x), 1.0)
                 self.assertLess(abs(x[-1]), 0.01)
+
+    def test_farnell_recipes_behave(self):
+        # Ch. 35-50 recipes: cricket has little energy below 1 kHz, rain refuses an unknown surface, every surface renders.
+        x = Y.render("cricket", seconds=1.5)
+        lo = Y._lp(x, 1000, 44100)
+        self.assertLess(sum(v * v for v in lo) / sum(v * v for v in x), 0.1)
+        for s in ("hard", "water", "mixed"):
+            self.assertTrue(any(Y.render("rain", seconds=0.5, surface=s)), s)
+        with self.assertRaises(ValueError):
+            Y.render("rain", seconds=0.5, surface="lava")
+        self.assertGreater(len(Y.render("motor", seconds=1.0, spinup=0.2, spindown=0.3)), 30000)
 
     def test_seed_changes_sound(self):
         self.assertNotEqual(Y.render("retro", seed=1, kind="laser"), Y.render("retro", seed=2, kind="laser"))

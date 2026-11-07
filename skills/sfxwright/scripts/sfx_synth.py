@@ -408,8 +408,114 @@ def retro(sr, rng, kind="coin"):
     raise ValueError("retro kind must be coin, laser, jump, hit, explode, powerup or blip")
 
 
+def _chirp(sr, rng, size, out, start):
+    """One surfacing bubble: a sine whose pitch rises on 1-(1-t)^4, level on a 6th-power decay (Farnell ch. 35)."""
+    dur = max(0.008, 0.09 * size)
+    f0 = 2000.0 * (1.15 - size) + 300.0 * rng.random()
+    n = int(dur * sr)
+    ph = 0.0
+    amp = 0.1 + size
+    for i in range(n):
+        t = i / n
+        ph += f0 * (1 + 1.5 * (1 - (1 - t) ** 4)) / sr
+        j = start + i
+        if j >= len(out):
+            break
+        out[j] += amp * math.sin(2 * math.pi * ph) * (1 - t) ** 6 * min(1.0, i / (0.002 * sr))
+
+
+def bubbles(sr, rng, seconds=3.0, size=0.5, jitter=0.4, rate=12.0, keep=0.7):
+    """Bubbles surfacing in water: pitch from size, Poisson gaps, some events dropped (after Farnell, Designing Sound ch. 35)."""
+    n = int(seconds * sr)
+    out = [0.0] * n
+    t = rng.expovariate(rate)
+    while t < seconds:
+        if rng.random() < keep:
+            s = min(1.0, max(0.05, size + rng.uniform(-jitter, jitter) * size))
+            _chirp(sr, rng, s, out, int(t * sr))
+        t += rng.expovariate(rate)
+    return _finish(_hp(out, 300, sr), sr, fade_ms=20, attack_ms=1)
+
+
+def rain(sr, rng, seconds=6.0, rate=900.0, surface="hard", bed=0.15):
+    """Rain: Poisson-timed parabolic drop clicks (short ones higher), high-passed, over a quiet noise bed; surface=hard|water|mixed (after Farnell ch. 38)."""
+    if surface not in ("hard", "water", "mixed"):
+        raise ValueError("rain surface must be hard, water or mixed")
+    n = int(seconds * sr)
+    out = [0.0] * n
+    t = rng.expovariate(rate)
+    while t < seconds:
+        start = int(t * sr)
+        if surface == "hard" or (surface == "mixed" and rng.random() < 0.8):
+            per = 0.0001 + 0.012 * rng.random() ** 2
+            m = max(2, int(per * sr))
+            amp = math.sqrt(per / 0.012) * rng.uniform(0.3, 1.0)
+            for i in range(m):
+                if start + i >= n:
+                    break
+                u = 2 * i / m - 1
+                out[start + i] += amp * (1 - u * u)
+        elif rng.random() < 0.05:
+            _chirp(sr, rng, rng.uniform(0.05, 0.3), out, start)
+        t += rng.expovariate(rate)
+    drops = _hp(out, 900, sr)
+    noise = _lp(_noise(n, rng), 2500, sr)
+    return _finish(_mix(n, (1.0, 0, drops), (bed, 0, noise)), sr, fade_ms=200, attack_ms=200)
+
+
+def motor(sr, rng, seconds=2.5, rpm=6000.0, poles=4, spinup=0.3, spindown=0.6, brush=0.05):
+    """Small electric motor: torque pulses at rpm/60 x poles, brush noise, fast spin-up and linear spin-down (after Farnell ch. 44); brush above 0.08 trips the CLICK check on purpose."""
+    n = int(seconds * sr)
+    up, down = int(spinup * sr), int(spindown * sr)
+    base = rpm / 60.0
+    hiss = _bp(_noise(n, rng), 4000, 0.7, sr)
+    ph, x = 0.0, []
+    for i in range(n):
+        if i < up:
+            s = 1 - (1 - i / up) ** 6
+        elif i > n - down:
+            s = max(0.0, (n - i) / down)
+        else:
+            s = 1.0
+        s *= 1 + 0.004 * math.sin(2 * math.pi * 3.1 * i / sr)
+        ph += base * s / sr
+        c = math.cos(2 * math.pi * ph * poles)
+        pulse = 1 / (1 + 4 * (1 - c))
+        click = math.sin(math.pi * (ph % 1.0)) ** 16
+        x.append(s * (pulse + brush * click * hiss[i]))
+    return _finish(_hp(x, 40, sr), sr, fade_ms=20, attack_ms=5)
+
+
+def cricket(sr, rng, seconds=4.0, carrier=4500.0, pulses=7, period=0.7, pulse_rate=58.0):
+    """Field cricket: bursts of pulses near 4.5 kHz, pitch drooping 10%, two wings slightly apart (after Farnell ch. 50)."""
+    n = int(seconds * sr)
+    out = [0.0] * n
+    burst = pulses / pulse_rate
+    t = 0.0
+    while t < seconds:
+        start = int(t * sr)
+        m = int(burst * sr)
+        ph1 = ph2 = 0.0
+        for i in range(m):
+            j = start + i
+            if j >= n:
+                break
+            u = i / m
+            k = int(u * pulses)
+            v = (u * pulses) - k
+            env = (0.25 + 0.25 * k / max(1, pulses - 1)) * max(0.0, 1 - 4 * (v - 0.5) ** 2) if v < 1 else 0.0
+            f = carrier * (1 - 0.1 * u)
+            ph1 += (f - 100) / sr
+            ph2 += (f + 100) / sr
+            s = math.sin(2 * math.pi * ph1) + math.sin(2 * math.pi * ph2) + 0.3 * math.sin(4 * math.pi * ph1)
+            out[j] += env * s
+        t += period * rng.uniform(0.95, 1.05)
+    return _finish(out, sr, fade_ms=20, attack_ms=1)
+
+
 RECIPES = {"shaker": shaker, "modal": modal, "footstep": footstep, "click": click, "switch": switch, "beep": beep, "wind": wind,
-           "fire": fire, "explosion": explosion, "whoosh": whoosh, "creak": creak, "retro": retro}
+           "fire": fire, "explosion": explosion, "whoosh": whoosh, "creak": creak, "retro": retro,
+           "bubbles": bubbles, "rain": rain, "motor": motor, "cricket": cricket}
 
 
 def describe():
