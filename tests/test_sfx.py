@@ -240,6 +240,35 @@ class NoComfy(Base):
         self.assertIn("synth", r["fallback"])
         self.assertEqual(json.loads(wf.read_text())["8"]["inputs"]["format"], "flac")
 
+    def _gen_with(self, fake):
+        host = {"host": "h", "busy": 0, "save_advanced": False, "routes": [{"ckpt": "stable_audio_3_medium.safetensors", "model": "stable_audio_3_medium", "family": "sa3", "text_encoder": "t", "licence": "x", "ready": True}]}
+        saved = sfx.probe_host, sfx.http_json, sfx.time.sleep
+        sfx.probe_host, sfx.http_json, sfx.time.sleep = (lambda h: host), fake, (lambda s: None)
+        try:
+            return run("gen", "a thud", "--host", "h", "--out", self.d / "t")
+        finally:
+            sfx.probe_host, sfx.http_json, sfx.time.sleep = saved
+
+    def test_gen_survives_a_missed_poll(self):
+        polls = []
+        def fake(url, data=None, timeout=20):
+            if data:
+                return {"prompt_id": "p"}
+            polls.append(url)
+            if len(polls) == 1:
+                raise TimeoutError("timed out")
+            return {"p": {"outputs": {}}}
+        code, r = self._gen_with(fake)
+        self.assertTrue(r["ok"], r)
+        self.assertEqual(len(polls), 2)
+
+    def test_gen_reports_a_refused_prompt(self):
+        def fake(url, data=None, timeout=20):
+            raise sfx.urllib.error.URLError("refused")
+        code, r = self._gen_with(fake)
+        self.assertEqual(code, 1)
+        self.assertIn("refused", r["error"])
+
     def test_combo_shapes(self):
         a = {"N": {"input": {"required": {"f": [["x"], {}]}}}}
         b = {"N": {"input": {"required": {"f": ["COMBO", {"options": ["y"]}]}}}}

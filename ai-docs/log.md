@@ -18,3 +18,7 @@ Blind boundary page built and pilot run on Mentos s6: 20 Medium takes, two synth
 ## 2026-11-07, session 4
 
 Read both pages. Boundary, unblinded: SA3 won piano, timpani and comic sting; ACE won brass. Pilot: mix A beat the original and mix B, marked "sounds artificial". Applied to routes.md, edit.md and musicwright. Added `add --gain`, `layer --recipe`, `record-sheet`, SEAM_SPECTRAL (0 of 29 false, 21 of 29 planted, where the sample step caught none). Tested and rejected a predictor click detector and shorter floor frames: no real gain in the calibrate script, numbers in thresholds.md. Rendered 15 generated parts on Medium and built the blind fish and layer page, unheard. threewright PR 18 was already merged when checked. 0.1.3.
+
+## 2026-11-07, session 5
+
+Read the fish and layer listen, unblinded: crate parts, sword seed 1, boom seed 2, spell seed 1, beast `bigger` (seed 3 also good). Seeds won 3 of 5 with 3 of 5 clips, so chance; "all about the same" never picked. Applied to edit.md. Dropped the other-takes retry of pilot mix A: this result does not show that seeds matter. Replaying the wiki found a real bug: `gen` crashed with a traceback when a busy host missed a 20 s poll, which would lose the prompt id; fixed with two tests. Wiki moved to 0.1.5: new replay script `_verify/wiki-verify.py` in the wiki repo, 155 commands, all matching. 0.1.5.

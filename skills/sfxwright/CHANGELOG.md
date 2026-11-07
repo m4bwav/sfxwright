@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.5, 2026-11-07
+
+Fish and layer listen applied to `references/edit.md`: winners spread over first take, another seed, parts and `bigger`, near chance, so layering is an option and not a proven upgrade. Fix: `gen` no longer crashes with a traceback when a busy host misses one poll, and reports a refused prompt as an error.
+
 ## 0.1.4, 2026-11-07
 
 Reference only: `references/edit.md` gains shaping moves from Aikin, *Power Tools for Synthesizer Programming* (2004): noise for wind, sync, ring mod, detune in hertz, distortion by layer, reverb and delay. A music book, untested on generated sound.
