@@ -62,6 +62,7 @@
     "skills": {
       "sfxwright": {
         "verdict": "CUT",
+        "ruling": "keep, Mark 2026-11-07: records and the ship check matter more than this test shows",
         "why": "no gain beyond noise (+8 points (noise margin 16)) at 1.72x the cost",
         "body_tokens": 1496,
         "listing_tokens": 239,
