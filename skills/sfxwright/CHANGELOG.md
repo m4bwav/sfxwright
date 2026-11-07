@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased, 2026-11-06
+
+Reference: `references/edit.md` gains found-sound moves from Murphy, *Ears to the Ground* (2024). Because: a book distilled into the downtempo beat; artists' reports, untested on generated sound.
+
 ## 0.1.2, 2026-11-06
 
 New `tone`, `check --tone-match` and `pop`, from the book notes. Fixes found by the Mentos pilot: `place` anchors a bed at its start instead of its loudest moment, which reported a misleading negative start; `gen` waits 30 s, not 6, for a busy host, which had dropped a whole render as unreachable.
