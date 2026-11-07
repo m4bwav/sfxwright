@@ -3,6 +3,7 @@
 State 2026-11-07, end of session 6. Public repo, v0.1.7, wiki at 0.1.5 (0.1.6 and 0.1.7 changed references only).
 
 ## Waiting on Mark
+The first three are on the page `sfxwright-lab/ask/sfx-waiting-1` (`python askwright/skills/askwright/scripts/ask.py read <that folder>`; `serve --detach` if down).
 - Thirty seconds of real room tone, twice, same room, as a phone or recorder file in `Ai/sfxwright-lab/roomtone/`: `check --tone-match` has only met planted noise.
 - Paid `evergreen-worth` A/B (about $14 last time): yes or no.
 - What "Mark's plugin sets" means: no such list found; sfxwright@sfxwright is installed. The nearest is Ai/.claude-plugin/marketplace.json (mark-local), which also omits voicewright.
