@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.7, 2026-11-07
+
+Reference only. `plan.md` gains Name the excitation and `edit.md` Stretching without resampling, from Miranda, *Computer Sound Design*, plus a line from Reveillac. `thresholds.md` records the attack skip test: no change to CLICK. Steiglitz read and nothing taken.
+
 ## 0.1.6, 2026-11-07
 
 Reference only, from Fry, *Sound Design for the Stage* (2019): `plan.md` gains Question each sound, `edit.md` Moves from theatre, `rights.md` Recording your own. Theatre practice, untested on generated audio. Fry's advice to cut bass for distance is marked as taste, since air absorbs mainly highs.
