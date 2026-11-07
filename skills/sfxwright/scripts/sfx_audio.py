@@ -341,6 +341,19 @@ def seam_ratio(audio):
     return round(worst, 2)
 
 
+def seam_spectral(audio, size=1024):
+    """Change in log spectrum across the loop point, over the 99th percentile change between frames inside the file. Finds a join a sample step cannot."""
+    x = audio.mono()
+    if len(x) < size * 8:
+        return 0.0
+    hop = max(size, (len(x) - size) // 200)
+    log = lambda f: [math.log1p(100 * v) for v in magnitudes(f, size)]
+    dist = lambda p, q: math.sqrt(sum((u - v) ** 2 for u, v in zip(p, q)))
+    frames = [log(x[i:i + size]) for i in range(0, len(x) - size, hop)]
+    inner = [dist(p, q) for p, q in zip(frames, frames[1:])] if hop == size else [dist(log(x[i:i + size]), log(x[i + size:i + 2 * size])) for i in range(0, len(x) - 2 * size, hop)]
+    return round(dist(log(x[:size]), log(x[-size:])) / max(percentile(inner, 0.99), 1e-9), 2)
+
+
 def measure(audio):
     """One dictionary of readings for a file. Pure measurement; flags are added by flag()."""
     mono = audio.mono()
@@ -394,10 +407,10 @@ def measure(audio):
 
 # Starting thresholds, calibrated as references/thresholds.md says.
 LIMITS = {"tone_gap_db": 6.0, "dc_db": -60.0, "head_db": -50.0, "tail_db": -60.0, "click": 20.0, "floor_db": -60.0, "flat_run": 4,
-          "lead_s": 0.05, "end_s": 0.25, "seam": 5.0}
+          "lead_s": 0.05, "end_s": 0.25, "seam": 5.0, "seam_spectral": 1.0}
 
 
-def flag(m, want_seconds=None, waive=(), loop=False, seam=None):
+def flag(m, want_seconds=None, waive=(), loop=False, seam=None, spectral=None):
     """Turn readings into named flags. A flag means listen; it is not a verdict."""
     if m.get("silent"):
         return ["SILENT"]
@@ -425,4 +438,6 @@ def flag(m, want_seconds=None, waive=(), loop=False, seam=None):
         f.append("LENGTH")
     if loop and seam is not None and seam > LIMITS["seam"]:
         f.append("SEAM")
+    if loop and spectral is not None and spectral > LIMITS["seam_spectral"]:
+        f.append("SEAM_SPECTRAL")
     return [x for x in f if x not in waive]

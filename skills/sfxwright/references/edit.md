@@ -40,6 +40,18 @@ From a synthesis textbook (Shepard, *Refining Sound*, 2013). It is about music, 
 - **Distance:** longer reverb pre-delay reads closer, shorter reads farther.
 - **Wash hides detail:** early reflections alone suggest a space without the late tail that masks.
 
+## Layer recipes
+
+From the film books, one engineer's ear each, and not yet proven here (blind page waiting, 2026-11-07). `layer FILE --out OUT --recipe`:
+
+- `bigger`: 100, 80 and 50% speed. Pitch moves with speed. Try `--gains 0,-3,-6`.
+- `pitch`: 0, -3, -6, -9 semitones. Small steps suggest movement; large ones trail away.
+- `offset`: six rotated copies of a bed. The same clip started at one place only gets louder.
+
+## On picture
+
+The Mentos pilot's layered mix beat the film's own generated sound in one blind listen on one shot, though the listener called it artificial. Layering over picture is worth trying; expect to replace takes before it convinces. Set each sound's level with `add --gain`, which `place` applies.
+
 ## Variation sets
 
 - One source with `vary`: pitch and gain only, so one attack. It may still machine-gun.

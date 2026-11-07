@@ -14,3 +14,7 @@ Bake-off read and unblinded after Mark confirmed the fast answers were his: Medi
 ## 2026-11-06, session 3
 
 Blind boundary page built and pilot run on Mentos s6: 20 Medium takes, two synth layers, spotted from frames (tank splits at 11.0 s), two mixes over the film's own audio, no one has heard them. `ship` on the pilot says CHECK (Stability licence), not commercial. Added tone, tone-match and pop. Pilot found two bugs, both fixed: bed anchoring in place, and a 6 s probe that lost a render on a busy host. Ten plugins released with their notes (results in sfxwright-lab/integration-2026-11-06.md); grindwright's sound lane now opens with either plugin; pixelwright's real changelog fault was a UTC date label; everscout 0.12.4 ships the beat and the thread flag fix. 0.1.2.
+
+## 2026-11-07, session 4
+
+Read both pages. Boundary, unblinded: SA3 won piano, timpani and comic sting; ACE won brass. Pilot: mix A beat the original and mix B, marked "sounds artificial". Applied to routes.md, edit.md and musicwright. Added `add --gain`, `layer --recipe`, `record-sheet`, SEAM_SPECTRAL (0 of 29 false, 21 of 29 planted, where the sample step caught none). Tested and rejected a predictor click detector and shorter floor frames: no real gain in the calibrate script, numbers in thresholds.md. Rendered 15 generated parts on Medium and built the blind fish and layer page, unheard. threewright PR 18 was already merged when checked. 0.1.3.
