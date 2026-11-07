@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.10, 2026-11-07
+
+Reference only: `thresholds.md` records TONE_MISMATCH on real room tone. The 6 dB limit stays, and one-shot flags that real tone always trips are named. No code behaviour changes.
+
 ## 0.1.9, 2026-11-07
 
 Reference only, from Cowan, *The Effects of Sound on People* (2016): `edit.md` gains Unpleasant or wearing. Untested on generated audio.

@@ -1,9 +1,8 @@
 # sfxwright handoff
 
-State 2026-11-07, end of session 8. Public repo, v0.1.8, wiki at 0.1.8.
+State 2026-11-07, end of session 9. Public repo, v0.1.10, wiki at 0.1.8 (0.1.9 and 0.1.10 change references only).
 
 ## Waiting on Mark
-- Room tone: double-click `Ai/sfxwright-lab/roomtone/record_tone.cmd` (webcam mic, about 70 s) or save two phone files there. Then run `check --tone-match` on them, a fill against its neighbour, and write the result in thresholds.md.
 - Optional: books still missing, `books/sfx-wanted-books.md`.
 
 ## Owed, in order
