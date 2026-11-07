@@ -105,6 +105,15 @@ Miranda, techniques from composition, untested here. Do them by script; `edit --
 
 Reveillac (2017), from music: use an exciter only on the bands that need it, in small steps, and rest your ears, since they adapt quickly. Ring mod below about 20 Hz acts as tremolo.
 
+## From synthesis and sampling
+
+Russ, *Sound Synthesis and Sampling* (2nd ed., 2008, sec. 4.3.1-4.3.2, 6.2-6.3, 6.8.3), a music book, untested on generated audio:
+
+- **Render from the original:** make every variant from the source file, never from a processed copy. Each pass adds noise and pitch-shift error, and the losses add up.
+- **Small pitch moves on voices and fixed-spectrum hits:** this is why Variation sets keeps them narrow. A big shift turns a voice comic; bells, triangles, tambourines and metal hits just sound wrong.
+- **Familiar plus alien:** keep the recognisable layer and add a short blip of an unexpected timbre at the onset, with no sustain and a short decay. On intensity tiers, let it sound only on the hardest hits, since harder hits have richer spectra.
+- **Fuse check:** raise one layer against the other until the two stop sounding like two sounds. Stop there.
+
 ## On picture
 
 The Mentos pilot's layered mix beat the film's own generated sound in one blind listen on one shot, though the listener called it artificial. Layering over picture is worth trying; expect to replace takes before it convinces. Set each sound's level with `add --gain`, which `place` applies.
