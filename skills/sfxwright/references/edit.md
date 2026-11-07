@@ -14,6 +14,15 @@ Past a limited range, artifacts are the effect, not a bug to tune out. Pitch shi
 
 Seed fish first (`--takes 8`). Then generate parts apart and layer: transient, body, low thump, tail. `layer` aligns peaks; offset layers a few ms apart when they phase. A weak attack wants a real transient: `synth click` or `modal` under it. Big sounds get detail from debris layers, not more low end. Add "bright, crisp" for dull output; metallic ringing may be a model artifact no prompt fixes.
 
+Say why before an edit: a fix, a feature or a fit. Copied settings do not transfer between sources. These moves come from music mixing (Case, *Sound FX*, 2007). None has been heard on generated sound, so treat each number as a starting point:
+
+- **Muddy, no punch:** try a narrow cut somewhere in 180 to 400 Hz, which may reveal the lows. Keep that band in at least one layer, or the whole goes thin.
+- **Thin alone:** judge it with its neighbours first. A layer may be right when another layer or the scene fills the band.
+- **Nothing in a band to boost:** EQ can only raise what exists. Light distortion adds new harmonics, but they can mask other layers, so listen to the whole.
+- **Dull or blunt front:** with a compressor, slow attack and slow release sharpen the front; a fast release undoes it. Attack and release values do not transfer between tools.
+- **Hollow after layering:** two copies under about 50 ms apart comb filter. At equal level, the nulls fall at odd multiples of 1/(2t): 1 ms nulls 500 Hz. Change the offset or the level.
+- **Wash hides detail:** early reflections alone suggest a space without the late tail that masks.
+
 ## Variation sets
 
 - One source with `vary`: pitch and gain only, so one attack. It may still machine-gun.
