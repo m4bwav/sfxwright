@@ -268,5 +268,68 @@ class Place(Base):
         self.assertEqual(r["placed"][0]["anchor"], "sync_point_s")
 
 
+class PlaceBed(Base):
+    def test_bed_starts_where_placed(self):
+        f = self.hit()
+        lst = self.d / "s.json"
+        run("init", lst, "--project", "p", "--use", "film", "--commercial", "no")
+        run("add", lst, "bed", "--event", "e", "--kind", "ambience", "--length", 1, "--at", 2.0, "--sync-class", "bed")
+        run("register", lst, "bed", f)
+        _, r = run("place", lst, "--sr", A.read_audio(f).sr)
+        self.assertEqual(r["placed"][0]["start_s"], 2.0)
+
+
+class ToneAndPop(Base):
+    def noise(self, name, seconds, level, seed=1, smooth=0.0, sr=8000):
+        import random
+        rng = random.Random(seed)
+        x, last = [], 0.0
+        for _ in range(int(seconds * sr)):
+            last = smooth * last + (1 - smooth) * rng.uniform(-level, level)
+            x.append(last)
+        f = self.d / name
+        A.write_wav(f, A.Audio(sr, [x]))
+        return f
+
+    def test_tone_finds_the_quiet_stretch_and_flags_a_short_one(self):
+        sr = 8000
+        loud, quiet = A.read_audio(self.noise("l.wav", 2, 0.5)), A.read_audio(self.noise("q.wav", 3, 0.01, seed=2))
+        f = self.d / "mix.wav"
+        A.write_wav(f, A.Audio(sr, [loud.channels[0] + quiet.channels[0] + loud.channels[0]]))
+        _, r = run("tone", f)
+        self.assertAlmostEqual(r["start_s"], 2.0, delta=0.15)
+        self.assertAlmostEqual(r["seconds"], 3.0, delta=0.2)
+        self.assertEqual(r["flags"], ["TONE_SHORT"])
+        padded = self.d / "pad.wav"
+        A.write_wav(padded, A.Audio(sr, [quiet.channels[0] + [0.0] * (sr * 4)]))
+        self.assertLess(run("tone", padded)[1]["start_s"], 1.0, "padding is not tone")
+
+    def test_tone_fill_reaches_length_and_matches_its_source(self):
+        src = self.noise("q.wav", 3, 0.02)
+        out = self.d / "fill.wav"
+        _, r = run("tone", src, "--out", out, "--seconds", 8)
+        self.assertEqual(r["fill_seconds"], 8.0)
+        self.assertEqual(sfx.tone_match(out, src)[1], [])
+        self.assertTrue(Path(str(out) + ".sfx.json").exists())
+
+    def test_tone_match_flags_planted_gain_and_dull_fill(self):
+        src = self.noise("a.wav", 4, 0.02)
+        self.assertEqual(sfx.tone_match(self.noise("b.wav", 4, 0.02, seed=9), src)[1], [], "same kind, other noise")
+        self.assertEqual(sfx.tone_match(self.noise("c.wav", 4, 0.06, seed=9), src)[1], ["TONE_MISMATCH"], "9.5 dB louder")
+        self.assertEqual(sfx.tone_match(self.noise("d.wav", 4, 0.02, seed=9, smooth=0.9), src)[1], ["TONE_MISMATCH"], "duller")
+
+    def test_pop_round_trip_and_a_slipped_pop(self):
+        src = self.noise("p.wav", 3, 0.2)
+        out = self.d / "pop.wav"
+        self.assertEqual(run("pop", src, "--out", out, "--fps", 24)[0], 0)
+        _, r = run("pop", out, "--verify", "--fps", 24)
+        self.assertEqual(r["flags"], [], r)
+        au = A.read_audio(out)
+        slip = self.d / "slip.wav"
+        A.write_wav(slip, A.Audio(au.sr, [[0.0] * (au.sr // 6) + au.channels[0][:au.sr] + [0.0] * (au.sr // 6) + au.channels[0][au.sr:]]))
+        _, r = run("pop", slip, "--verify", "--fps", 24)
+        self.assertEqual(r["flags"], ["POP_OFF"], r)
+
+
 if __name__ == "__main__":
     unittest.main()

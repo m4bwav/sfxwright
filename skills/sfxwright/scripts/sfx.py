@@ -49,7 +49,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import sfx_audio as A  # noqa: E402
 import sfx_synth as S  # noqa: E402
 
-VERSION = "0.1.1"
+VERSION = "0.1.2"
 SCHEMA = 1
 KINDS = ("one-shot", "loop", "ambience", "sequence", "stinger", "ui")
 STATUSES = ("planned", "rendered", "picked", "finished", "rejected")
@@ -317,7 +317,7 @@ def audio_routes(info):
     return routes, partner
 
 
-def probe_host(h, timeout=6):
+def probe_host(h, timeout=30):  # a busy host answered too slowly for 6 s and a render was lost
     try:
         info = http_json(h + "/object_info", timeout=timeout)
         q = http_json(h + "/queue", timeout=timeout)
@@ -539,6 +539,9 @@ def cmd_check(a):
             m["seam"], m["seam_via"] = seam, via
         length = a.seconds or (s.get("length_s") if s.get("kind") in ("one-shot", "ui", "stinger") else None)
         flags = A.flag(m, want_seconds=length, waive=tuple((a.waive or "").split(",")), loop=loop, seam=seam)
+        if a.tone_match:
+            m["tone_gaps_db"], extra = tone_match(f, a.tone_match)
+            flags = flags + extra
         rows.append({"file": Path(f).name, "flags": flags, **({} if not a.json else {"readings": m}), **({} if a.json else {"m": m})})
     bad = sum(1 for r in rows if r["flags"])
     if a.json:
@@ -902,6 +905,72 @@ def cmd_loop(a):
     return {"ok": True, "out": a.out, "seconds": round(res_au.seconds, 3), "seam": seam, "seam_via": via, "flags": ["SEAM"] if seam > A.LIMITS["seam"] else [], "note": "use WAV or OGG: MP3 padding breaks loops"}
 
 
+def cmd_tone(a):
+    """Find the steadiest quiet stretch in a recording and optionally make a fill of it."""
+    guard_edit([a.input], a.override_licence)
+    au = A.read_audio(a.input)
+    start, length, rms = A.quietest_stretch(au.mono(), au.sr)
+    i0, i1 = int(start * au.sr), int((start + length) * au.sr)
+    flags = ["TONE_SHORT"] if length < a.min_seconds else []
+    res = {"ok": True, "start_s": round(start, 2), "seconds": round(length, 2), "rms_db": round(rms, 1), "flags": flags,
+           "bands_low_mid_high_db": A.band_levels(A.Audio(au.sr, [c[i0:i1] for c in au.channels]).mono(), au.sr)}
+    if not a.out:
+        return res
+    if i1 - i0 < au.sr // 2:
+        raise Fail("only %.2f s of steady tone found: too short for a fill" % length)
+    want = int((a.seconds or length) * au.sr)
+    xf = min((i1 - i0) // 4, au.sr)
+    out = []
+    for c in au.channels:
+        part = c[i0:i1]
+        buf = list(part[:want])
+        while len(buf) < want:  # equal power: tone is uncorrelated noise, and a straight repeat would click
+            for k in range(xf):
+                th = k / xf * math.pi / 2
+                buf[len(buf) - xf + k] = buf[len(buf) - xf + k] * math.cos(th) + part[k] * math.sin(th)
+            buf.extend(part[xf:])
+        out.append(buf[:want])
+    A.write_wav(a.out, A.Audio(au.sr, out))
+    derive(a.out, [a.input], {"op": "tone", "start_s": res["start_s"], "seconds": round(want / au.sr, 3), "date": today()})
+    res["out"], res["fill_seconds"] = a.out, round(want / au.sr, 3)
+    return res
+
+
+def tone_match(fill, neighbour):
+    """Band level gaps in dB, fill minus neighbour; a gap flags TONE_MISMATCH, never a verdict."""
+    x, y = A.read_audio(fill), A.read_audio(neighbour)
+    gaps = [round(p - q, 1) for p, q in zip(A.band_levels(x.mono(), x.sr), A.band_levels(y.mono(), y.sr))]
+    return gaps, ["TONE_MISMATCH"] if max(abs(g) for g in gaps) > A.LIMITS["tone_gap_db"] else []
+
+
+def cmd_pop(a):
+    """Add a head and tail 2 pop to a stem, or verify them: one frame of 1 kHz, 2 s clear of the programme."""
+    au = A.read_audio(a.input)
+    frame = int(round(au.sr / a.fps))
+    gap = int(2 * au.sr)
+    if a.verify:
+        mono = au.mono()
+        limit = A.undb(-60)
+        loud = [i for i, v in enumerate(mono) if abs(v) > limit]
+        if not loud:
+            raise Fail("silent file: no pop to find")
+        gaps = [(p, q) for p, q in zip(loud, loud[1:]) if q - p > au.sr // 2]
+        if not gaps:
+            return {"ok": True, "head_frames_off": None, "tail_frames_off": None, "flags": ["POP_OFF"]}
+        head = round((gaps[0][1] - loud[0] - gap) / frame, 2)  # frames off the 2 s mark
+        tail = round((gaps[-1][1] - gaps[-1][0] + frame - gap) / frame, 2)
+        ok = len(gaps) >= 2 and abs(head) <= a.tolerance and abs(tail) <= a.tolerance
+        return {"ok": True, "head_frames_off": head, "tail_frames_off": tail, "flags": [] if ok else ["POP_OFF"]}
+    if not a.out:
+        raise Fail("pop needs --out, or --verify")
+    amp = A.undb(a.level)
+    beep = [amp * math.sin(2 * math.pi * 1000 * i / au.sr) for i in range(frame)]
+    silence = [0.0] * (gap - frame)
+    A.write_wav(a.out, A.Audio(au.sr, [beep + silence + list(c) + [0.0] * (gap - frame) + beep for c in au.channels]))
+    derive(a.out, [a.input], {"op": "pop", "fps": a.fps, "level_db": a.level, "date": today()})
+    return {"ok": True, "out": a.out, "programme_starts_s": round(gap / au.sr, 3), "note": "cut the pops off before anything but a sync check"}
+
+
 def cmd_place(a):
     """Lay each sound's first take at at_s, aligned on its sync point, and report the error in frames."""
     d = load_list(a.list)
@@ -920,8 +989,8 @@ def cmd_place(a):
         m = A.measure(au)
         sp = s.get("sync_point_s")
         anchored = sp is not None
-        if sp is None:
-            sp = m.get("peak_s", 0.0)
+        if sp is None:  # a bed starts where it is placed; its loudest moment means nothing
+            sp = 0.0 if s.get("sync_class") == "bed" else m.get("peak_s", 0.0)
         start = s["at_s"] - sp
         err = (m.get("peak_s", 0.0) - sp) * fps
         limit = 1 if s.get("sync_class", "tight") == "tight" else 2
@@ -1289,7 +1358,21 @@ def build_parser():
     c.add_argument("--seconds", type=float, help="expected sound length")
     c.add_argument("--loop", action="store_true")
     c.add_argument("--waive", help="comma-separated flags this brief allows, such as CLICK for crackle")
+    c.add_argument("--tone-match", help="a neighbouring recording: flag a fill whose bands do not match it")
     c.add_argument("--json", action="store_true")
+    c = add("tone", cmd_tone)
+    c.add_argument("input")
+    c.add_argument("--out", help="write a fill made from the stretch")
+    c.add_argument("--seconds", type=float, help="fill length; a short stretch is crossfaded to reach it")
+    c.add_argument("--min-seconds", type=float, default=5.0, help="flag a shorter stretch")
+    c.add_argument("--override-licence", action="store_true")
+    c = add("pop", cmd_pop)
+    c.add_argument("input")
+    c.add_argument("--out")
+    c.add_argument("--fps", type=float, default=24.0)
+    c.add_argument("--level", type=float, default=-20.0, help="pop level in dBFS")
+    c.add_argument("--verify", action="store_true", help="measure existing pops, frames off the 2 s mark")
+    c.add_argument("--tolerance", type=float, default=0.5, help="frames")
     add("set", cmd_set).add_argument("files", nargs="+")
     add("timing", cmd_timing).add_argument("file")
     c = add("degrade", cmd_degrade)

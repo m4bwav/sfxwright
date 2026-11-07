@@ -295,6 +295,40 @@ def click_scan(mono, sr, skip=()):
     return {"ratio": round(best, 2), "at_s": None if at is None else round(at, 4), "count": count}
 
 
+def band_levels(mono, sr, size=4096, frames=20):
+    """Mean power in dB for low (under 300 Hz), mid and high (over 3 kHz); levels are absolute, so gain shows."""
+    hop = max(size, (len(mono) - size) // max(1, frames - 1))
+    bins = [0.0, 0.0, 0.0]
+    count = 0
+    for start in range(0, max(1, len(mono) - size + 1), hop):
+        for i, v in enumerate(magnitudes(mono[start:start + size], size)):
+            hz = i * sr / size
+            bins[0 if hz < 300 else 1 if hz < 3000 else 2] += v * v
+        count += 1
+    return [round(db(math.sqrt(b / max(1, count)) / size), 1) for b in bins]
+
+
+def quietest_stretch(mono, sr, within_db=3.0, frame_s=0.1):
+    """Longest run of frames within within_db of the 10th-percentile frame: (start_s, seconds, rms_db)."""
+    size = max(1, int(frame_s * sr))
+    levels = [math.sqrt(sum(v * v for v in mono[i:i + size]) / size) for i in range(0, len(mono) - size + 1, size)]
+    live = [v for v in levels if v > undb(-80)]  # generated takes pad with near-digital silence, which is not tone
+    if not live:
+        return 0.0, 0.0, db(0.0)
+    limit = percentile(live, 0.10) * undb(within_db)
+    levels = [v if v > undb(-80) else float("inf") for v in levels]
+    best, run_start = (0, 0), None
+    for i, v in enumerate(levels + [float("inf")]):
+        if v <= limit:
+            run_start = i if run_start is None else run_start
+        elif run_start is not None:
+            if i - run_start > best[1]:
+                best = (run_start, i - run_start)
+            run_start = None
+    run = levels[best[0]:best[0] + best[1]]
+    return best[0] * frame_s, best[1] * frame_s, db(math.sqrt(sum(v * v for v in run) / max(1, len(run))))
+
+
 def seam_ratio(audio):
     """Loop seam: the jump from the last sample to the first, over the 99th percentile step. About 1 is smooth."""
     worst = 0.0
@@ -359,7 +393,7 @@ def measure(audio):
 
 
 # Starting thresholds, calibrated as references/thresholds.md says.
-LIMITS = {"dc_db": -60.0, "head_db": -50.0, "tail_db": -60.0, "click": 20.0, "floor_db": -60.0, "flat_run": 4,
+LIMITS = {"tone_gap_db": 6.0, "dc_db": -60.0, "head_db": -50.0, "tail_db": -60.0, "click": 20.0, "floor_db": -60.0, "flat_run": 4,
           "lead_s": 0.05, "end_s": 0.25, "seam": 5.0}
 
 
