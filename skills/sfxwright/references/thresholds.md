@@ -39,6 +39,10 @@ What it supports: trust DC, cuts and padding. Heavy clipping is caught; light cl
 
 Bugs this found: a strong click posed as the peak and hid in the attack window (now read through a three-point median); fades read as cuts.
 
+## Tone match
+
+TONE_MISMATCH: any of three bands (under 300 Hz, to 3 kHz, above) differs by more than 6 dB. Calibrated on planted faults only, white noise at 8 kHz: another seed reads under the limit, 9.5 dB of gain and a one-pole dulled copy read over it. No real room tone has been tried, and nobody has listened. TONE_SHORT is a plain 5 s default, from the books' room tone advice (30 s named for exteriors), not a measurement. `tone` ignores frames under -80 dB, because generated takes pad with near-silence.
+
 ## Known limits
 
 - `set` finds exact and near-exact copies. It does not catch pitch-shifted copies of one source: six `vary` outputs from one file read a median correlation of 0.27. So a clean `set` does not rule out machine-gunning. Listen.

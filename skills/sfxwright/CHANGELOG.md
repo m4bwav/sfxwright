@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.2, 2026-11-06
+
+New `tone`, `check --tone-match` and `pop`, from the book notes. Fixes found by the Mentos pilot: `place` anchors a bed at its start instead of its loudest moment, which reported a misleading negative start; `gen` waits 30 s, not 6, for a busy host, which had dropped a whole render as unreachable.
+
 ## 0.1.1, 2026-11-06
 
 Routes set from a blind listen: SA3 Medium 10 of 12, procedural 2, Small SFX 0. `gen` now prefers Medium over Small SFX, and the idle host still comes first.
