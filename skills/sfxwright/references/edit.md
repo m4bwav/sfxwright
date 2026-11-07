@@ -8,6 +8,8 @@
 | A space on a dry sound | `edit --op convolve --ir room.wav --value 0.3` | Know the impulse's licence |
 | Clean ends | `edit --op tidy` | Removes DC, trims, fades to zero |
 
+A harsh sound can hide slow material: pitch train or lorry brakes down three or four octaves and listen (Murphy, *Ears to the Ground*, 2024, ch. 4). A recorded room or building as the impulse suits percussion (ch. 3). To add weight without showing the source, look at where a sound's energy sits and blend it under an instrument with energy there (ch. 1). When recording, a contact mic on a rail or fence takes vibration, not air (ch. 4). These are artists' reports, untested on generated sound.
+
 Past a limited range, artifacts are the effect, not a bug to tune out. Pitch shift and frequency shift differ.
 
 ## Thin or muddy output
