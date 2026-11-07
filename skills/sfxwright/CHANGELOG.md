@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.16, 2026-11-07
+
+Reference only, from Russ, *Sound Synthesis and Sampling* (2nd ed., sec. 4.3, 6.2-6.3, 6.8.3): `edit.md` gains From synthesis and sampling (render every variant from the original, why voices and fixed-spectrum hits take small pitch moves, a short alien onset layer on the hardest hits, a fuse check for layer levels).
+
 ## 0.1.15, 2026-11-07
 
 Reference only, from Viers, *The Sound Effects Bible* (2008, ch. 18): `edit.md` gains Builds by event (explosion parts and trail-off, crash level contrast, automatic fire from single shots at the real rate, body falls, punches, swords, rumble, mouse-over, laser, clean attack spliced onto a fuller take) and a creature performance tip.
