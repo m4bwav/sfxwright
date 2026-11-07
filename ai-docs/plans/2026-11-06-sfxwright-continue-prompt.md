@@ -10,7 +10,7 @@ Read `sfxwright/ai-docs/HANDOFF.md`, `ai-docs/log.md`, `ai-docs/decisions/`, bot
 
 - New books: compare `books/` and `D:/RawStorage/BigDownloads/Unorganized` by file name with `books/sfx-wanted-books.md`. Distill any new or approved one by `books/plugin-learnings/INDEX.md`. Never look for or download copies.
 - Open listening or decision pages: `python askwright/skills/askwright/scripts/ask.py read <page>`; if down, `serve --detach`.
-- New `ai-sfx` beat leads: `python everscout/scripts/everscout.py leads --beat ai-sfx`.
+- New `ai-sfx` beat leads: `python everscout/scripts/everscout.py leads --beat ai-sfx --since <date of last session>` (`--since` is required).
 
 ## What waits on Mark
 
