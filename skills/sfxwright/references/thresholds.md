@@ -44,6 +44,10 @@ Bugs this found: a strong click posed as the peak and hid in the attack window (
 
 A linear-predictor click detector (order 12, block by block, ratio limit 12) on the same 36 generated and 8 procedural files: +0.5 clicks 22/32 and 5/6, +0.1 4/32 and 2/6, +0.03 2/32 and 2/6, clean flags 4/36 and 2/8. That matches the current detector within noise and runs far slower, so it was not kept. A numpy prototype that also searched the attack reached 29/32 at +0.5, so the attack skip may be what limits detection; not tested further. Shorter noise-floor frames (20 ms, 100 ms steady) gave 7/12 and 1/12 at -45 and -55 dB, no better, and more clean flags (24 of 36), so they were not kept either. CLICK and NOISE_FLOOR stay weak, as above.
 
+## Attack skip, 2026-11-07
+
+`clickcal/clickcal.py` in the private lab: all 116 audio files under the bake-off takes, tidied, one planted click per strength, limit 20. Raw counts, files already flagged clean included. Current skip / no skip: clean 16 / 19, body +0.5 89 / 91, +0.1 38 / 41, +0.03 24 / 26, click inside the attack 16 / 57. So the skip does not limit clicks in the body, which closes that lead; the earlier 29/32 came from another detector. Removing the skip would catch clicks inside the attack, where a loud transient may mask them, at 3 more clean flags nobody has heard, so it stays. Limit and detector unchanged.
+
 ## Spectral seam, 2026-11-07
 
 `fish-layer/seamcal.py` in the private lab: 29 wind, fire and truck takes. Good: crossfaded loops. Bad: second half low-passed at 800 Hz with RMS matched, an extreme planted change. At limit 1.0: 0 of 29 good flagged, 21 of 29 bad caught; the sample-step SEAM caught 0 of 29. At 0.8: 5 false, 24 caught. Generated and procedural beds only, not heard, no real recordings.

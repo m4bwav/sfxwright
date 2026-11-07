@@ -22,3 +22,7 @@ Read both pages. Boundary, unblinded: SA3 won piano, timpani and comic sting; AC
 ## 2026-11-07, session 5
 
 Read the fish and layer listen, unblinded: crate parts, sword seed 1, boom seed 2, spell seed 1, beast `bigger` (seed 3 also good). Seeds won 3 of 5 with 3 of 5 clips, so chance; "all about the same" never picked. Applied to edit.md. Dropped the other-takes retry of pilot mix A: this result does not show that seeds matter. Replaying the wiki found a real bug: `gen` crashed with a traceback when a busy host missed a 20 s poll, which would lose the prompt id; fixed with two tests. Wiki moved to 0.1.5: new replay script `_verify/wiki-verify.py` in the wiki repo, 155 commands, all matching. 0.1.5.
+
+## 2026-11-07, session 6
+
+Tested the attack skip lead: it does not limit body clicks (numbers in thresholds.md), CLICK unchanged. Another session distilled Fry (0.1.6). Distilled the rest in part: Miranda (excitation and stretching moves applied), Reveillac (one line; a catalogue of music effects), Steiglitz (nothing taken). 0.1.7. Script and results in sfxwright-lab/clickcal.

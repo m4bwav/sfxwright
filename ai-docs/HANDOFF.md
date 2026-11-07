@@ -1,6 +1,6 @@
 # sfxwright handoff
 
-State 2026-11-07, end of session 5. Public repo, v0.1.5, wiki at 0.1.5. Fish and layer listen applied.
+State 2026-11-07, end of session 6. Public repo, v0.1.7, wiki at 0.1.5 (0.1.6 and 0.1.7 changed references only).
 
 ## Waiting on Mark
 - Thirty seconds of real room tone, twice, same room, as a phone or recorder file in `Ai/sfxwright-lab/roomtone/`: `check --tone-match` has only met planted noise.
@@ -9,9 +9,9 @@ State 2026-11-07, end of session 5. Public repo, v0.1.5, wiki at 0.1.5. Fish and
 - Optional: books still missing, `books/sfx-wanted-books.md`.
 
 ## Owed, in order
-1. Books in Unorganized on no list and not distilled, by file name: Fry *Sound Design for the Stage*, Reveillac *Musical Sound Effects*, Miranda *Computer Sound Design*, Steiglitz *DSP Primer*. Judge from the file, distill what adds something.
-2. CLICK stays weak. Untested lead: the attack skip may be what limits it (thresholds.md, Tried and rejected).
-3. Evergreen refresh due 2026-11-20.
+1. Evergreen refresh due 2026-11-20.
+
+CLICK stays weak; the attack skip lead is closed (thresholds.md). No other detector is planned unless a listen shows missed clicks matter.
 
 Dropped: Small SFX base vs distilled listen (Medium beat Small SFX 12 to 0). Other takes for pilot mix A (the fish listen did not show that seeds matter).
 

@@ -73,6 +73,16 @@ Fry (2019), a designer's practice, untested on generated audio:
 - **Very short and loud:** speakers cannot match a gunshot's crack, so the tail and its space carry it.
 - Keep layers as separate files until levels are tried in their final setting.
 
+## Stretching without resampling
+
+Miranda, techniques from composition, untested here. Do them by script; `edit --op stretch` is the built-in option:
+
+- **Brassage:** to lengthen, cut overlapping fragments and lay them end to end; to shorten, leave gaps. Crossfade every join. Very short uniform fragments add a flutter.
+- **Zigzag:** play forward and back between turning points. Works best on even or noisy sounds; short fast spans flutter.
+- **Wavesets:** edit between zero crossings. Drop cycles to punch holes, swap in other waveforms, or interleave the cycles of two sounds.
+
+Reveillac (2017), from music: use an exciter only on the bands that need it, in small steps, and rest your ears, since they adapt quickly. Ring mod below about 20 Hz acts as tremolo.
+
 ## On picture
 
 The Mentos pilot's layered mix beat the film's own generated sound in one blind listen on one shot, though the listener called it artificial. Layering over picture is worth trying; expect to replace takes before it convinces. Set each sound's level with `add --gain`, which `place` applies.

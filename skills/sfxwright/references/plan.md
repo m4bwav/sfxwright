@@ -31,3 +31,13 @@ One low cloth track following movement; special garments apart. Excess gets cut,
 Build from a quiet bed plus sparse events per location, not one long take. Practitioner advice, not a measurement.
 
 Sources: Viers, Holman, Rose, Ament, Zdanowicz and Bambrick, Fuesslin in Somberg vol. 3; Fry; an r/sounddesign thread on backgrounds.
+
+## Name the excitation
+
+Miranda, *Computer Sound Design*, from instrument synthesis, untested on generated audio. Say what drives the sound before choosing a route, and put it in the prompt or recipe:
+
+- **Impulsive** (hit, pluck): starts at its fullest; the top fades first.
+- **Continuous** (bow, blow, motor): starts simple, gains partials, loses them in reverse when the force stops.
+- **Iterating** (roll, rattle, ratchet): repeated impulses, so plan the rate and how it varies.
+
+Then ask how pitched or noisy it is. A spectrum that fades the wrong way is a cue to listen, not a verdict.
