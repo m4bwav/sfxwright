@@ -1,6 +1,7 @@
 import contextlib
 import io
 import json
+import math
 import sys
 import tempfile
 import time
@@ -99,7 +100,7 @@ class Finish(Base):
 
     def test_seam_fault_flagged(self):
         f = self.d / "w.wav"
-        run("synth", "wind", "--out", f, "--param", "seconds=2", "--param", "gentle=yes")
+        A.write_wav(f, A.Audio(44100, [[0.3 * math.sin(2 * math.pi * 100 * i / 44100) for i in range(44100)]]))
         bad = self.d / "b.wav"
         run("degrade", f, bad, "--fault", "seam")
         self.assertGreater(A.seam_ratio(A.read_audio(bad)), A.LIMITS["seam"])
