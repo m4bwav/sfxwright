@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.14, 2026-11-07
+
+Reference only, from Ament, *The Foley Grail* (3rd ed., ch. 5, 10 and 11): `plan.md` gains late-over-early sync tolerance (one frame late passes, one early does not), shift a whole run before moving single hits, a sync sweet spot for busy props, thinner foley under songs, foley style matched to the picture, signature sounds, and mixed footfall kinds in a walk.
+
 ## 0.1.13, 2026-11-07
 
 Reference only, from Collins, *Game Sound* (MIT, 2008, ch. 5 and 7): `plan.md` From a game gains what each event tells the player (warnings stay audible, a visual twin when the game must play muted), fixed, adaptive or interactive events, a dry source with the room added in the engine, object and material names, and more variants for long games.
