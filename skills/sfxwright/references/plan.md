@@ -10,6 +10,8 @@ List by category with `event`, `trigger`, `kind`, `spatial`, `priority`, `max_in
 
 Spot against locked picture: `at_s`, `sync_point_s` (the moment inside the file that lands on the frame) and `sync_class`: `tight` for hits you can see, `loose` for near-sync, `bed` for backgrounds. Spend on what a viewer can see: a bed plus sold hits beats every footstep equal. Set `role`: hard, background, foley, design. Work order when others hold those tracks: dialogue, music, backgrounds, then hard effects. Picture means 48 kHz. Sync limit starts at 1 frame for tight hits, 2 for near-sync; a practitioner figure to test by eye.
 
+Sound and picture fuse at a sync point almost whatever the sound is, so for a tight hit judge timing and isolation before a literal match: one clear sound per visible action binds, and a louder one binds harder. Choose how much material detail each sound carries (friction, grit, unevenness): more makes the scene tangible, less makes it abstract, and either can be right. A loud event in a real room also changes colour, rings the room and rattles nearby things; a big boom with none of that reads clean and detached. Check the cut by watching it silent, listening without picture, then both, and list what you hear but do not see and see but do not hear. Chion, *Audio-Vision* (2019 ed., ch. 3, 5, 9): theory argued from film examples, untested on generated sound.
+
 ## From a description
 
 Write the list anyway, even for three sounds, so the files have a home.
