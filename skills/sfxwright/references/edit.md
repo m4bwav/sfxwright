@@ -14,7 +14,7 @@ Past a limited range, artifacts are the effect, not a bug to tune out. Pitch shi
 
 ## Thin or muddy output
 
-Seed fish first (`--takes 8`). Then generate parts apart and layer: transient, body, low thump, tail. `layer` aligns peaks; offset layers a few ms apart when they phase. A weak attack wants a real transient: `synth click` or `modal` under it. Big sounds get detail from debris layers, not more low end. Add "bright, crisp" for dull output; metallic ringing may be a model artifact no prompt fixes.
+Try a few seeds first (`--takes 4`). If none works, generate parts apart and layer: transient, body, low thump, tail. In one blind listen (five sounds, one listener, 2026-11-07) the winners were spread: first take 2, another seed 1, generated parts 1, the `bigger` recipe 1. "All about the same" was never picked, so takes do differ, but seeds won 3 of 5 with 3 of 5 clips, which is what chance gives. Layering is an option to try, not a proven upgrade. `layer` aligns peaks; offset layers a few ms apart when they phase. A weak attack wants a real transient: `synth click` or `modal` under it. Big sounds get detail from debris layers, not more low end. Add "bright, crisp" for dull output; metallic ringing may be a model artifact no prompt fixes.
 
 Say why before an edit: a fix, a feature or a fit. Copied settings do not transfer between sources. These moves come from music mixing (Case, *Sound FX*, 2007). None has been heard on generated sound, so treat each number as a starting point:
 
@@ -52,7 +52,7 @@ From a synthesis textbook (Shepard, *Refining Sound*, 2013). It is about music, 
 
 ## Layer recipes
 
-From the film books, one engineer's ear each, and not yet proven here (blind page waiting, 2026-11-07). `layer FILE --out OUT --recipe`:
+From the film books, one engineer's ear each. Only `bigger` has been heard here: it won 1 of 5 in a blind listen, no better than chance (2026-11-07). `layer FILE --out OUT --recipe`:
 
 - `bigger`: 100, 80 and 50% speed. Pitch moves with speed. Try `--gains 0,-3,-6`.
 - `pitch`: 0, -3, -6, -9 semitones. Small steps suggest movement; large ones trail away.

@@ -50,7 +50,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import sfx_audio as A  # noqa: E402
 import sfx_synth as S  # noqa: E402
 
-VERSION = "0.1.4"
+VERSION = "0.1.5"
 SCHEMA = 1
 KINDS = ("one-shot", "loop", "ambience", "sequence", "stinger", "ui")
 STATUSES = ("planned", "rendered", "picked", "finished", "rejected")
@@ -398,11 +398,18 @@ def cmd_gen(a):
     host, route = candidates[0]
     tag = hashlib.sha1(("%s%s%s" % (a.prompt, a.seed, time.time())).encode()).hexdigest()[:8]
     wf, text = build_prompt(route, a.prompt, a.seconds, a.takes, a.seed, "audio/sfxwright_%s" % tag, host["save_advanced"])
-    pid = http_json(host["host"] + "/prompt", {"prompt": wf})["prompt_id"]
+    try:
+        pid = http_json(host["host"] + "/prompt", {"prompt": wf}, timeout=120)["prompt_id"]
+    except (urllib.error.URLError, OSError, ValueError, KeyError) as e:
+        raise Fail("ComfyUI refused or dropped the prompt: %s" % e)
     deadline = time.time() + a.timeout
     entry = None
     while time.time() < deadline:
-        h = http_json(host["host"] + "/history/" + pid)
+        try:
+            h = http_json(host["host"] + "/history/" + pid)
+        except (urllib.error.URLError, OSError, ValueError):  # a busy host can miss one poll; the render is still going
+            time.sleep(2)
+            continue
         if pid in h:
             entry = h[pid]
             break
