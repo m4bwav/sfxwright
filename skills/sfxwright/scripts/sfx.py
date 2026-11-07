@@ -445,8 +445,8 @@ def cmd_synth(a):
         seed = a.seed + i
         try:
             x = S.render(a.recipe, sr=a.sr, seed=seed, **params)
-        except TypeError as e:
-            raise Fail("%s: %s" % (a.recipe, e))
+        except TypeError:
+            raise Fail("%s: a --param has the wrong name or type, given %s; see references/routes.md" % (a.recipe, sorted(params)))
         except ValueError as e:
             raise Fail(str(e))
         f = outp if a.takes == 1 and outp.suffix else (outp if not outp.suffix else outp.parent) / ("%s_%02d.wav" % (a.name or a.recipe, i + 1))
@@ -671,8 +671,8 @@ def cmd_degrade(a):
         keep = int(n * (a.amount if a.amount is not None else 0.4))
         ch = [c[:keep] for c in ch]
     elif a.fault == "seam":
-        cut = int(n * 0.37)
-        ch = [c[cut:] + c[:cut - int(0.01 * au.sr)] for c in ch]
+        v = a.amount if a.amount is not None else 0.3
+        ch = [[s + v * i / n for i, s in enumerate(c)] for c in ch]  # a ramp: the end no longer meets the start
     elif a.fault == "noise":
         k = A.undb(a.amount if a.amount is not None else -45.0)
         ch = [[s + k * rng.uniform(-1, 1) for s in c] for c in ch]
@@ -960,6 +960,8 @@ def cmd_finish(a):
     k = A.undb(ceil) / top
     au = tidy(A.Audio(au.sr, [[s * k for s in c] for c in au.channels])) if not a.keep_ends else A.Audio(au.sr, [[s * k for s in c] for c in au.channels])
     outp = Path(a.out)
+    if outp.suffix.lower() != "." + fmt:
+        outp = outp.with_suffix("." + fmt)  # the extension sets ffmpeg's container, so it must match the format
     if fmt == "wav" and au.sr == sr:
         A.write_wav(outp, au, bits=24 if a.bits == 24 else 16)
     else:

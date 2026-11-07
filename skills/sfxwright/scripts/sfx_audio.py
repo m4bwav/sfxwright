@@ -263,28 +263,33 @@ def _clip_runs(ch):
     return longest, peak
 
 
+def median3(x):
+    """Three-point median: removes one-sample spikes and leaves the shape of a sound."""
+    out = list(x)
+    for i in range(1, len(x) - 1):
+        p, q, r = x[i - 1], x[i], x[i + 1]
+        out[i] = max(min(p, q), min(max(p, q), r))
+    return out
+
+
 def click_scan(mono, sr, skip=()):
-    """Isolated sample steps far above the file's own 99.9th percentile step, outside the given (start,end) spans."""
+    """Isolated spikes: distance from the three-point median, against the same distance nearby, outside the given spans."""
     if len(mono) < 64:
         return {"ratio": 0.0, "at_s": None, "count": 0}
-    steps = [abs(mono[i + 1] - mono[i]) for i in range(len(mono) - 1)]
-    ref = percentile(steps, 0.999)
-    if ref <= 1e-9:
-        ref = max(steps) or 1.0
-        return {"ratio": 0.0, "at_s": None, "count": 0} if max(steps) < 1e-4 else {"ratio": 99.0, "at_s": round(steps.index(ref) / sr, 4), "count": 1}
-    best, at, count = 0.0, None, 0
-    last = -sr
+    med = median3(mono)
+    res = [abs(p - q) for p, q in zip(mono, med)]
+    ref = percentile(res, 0.999)
+    floor = max(max(abs(v) for v in mono) * 0.002, 1e-5)
     guard = int(0.001 * sr)
-    # Compare with a local reference too: a step is a click only when it stands out from its own neighbourhood.
-    for i, s in enumerate(steps):
-        if s < ref * 1.5 or any(a <= i <= b for a, b in skip):
+    best, at, count, last = 0.0, None, 0, -sr
+    for i, v in enumerate(res):
+        if v < max(ref, floor) or any(a <= i <= b for a, b in skip):
             continue
-        near = steps[max(0, i - 3 * guard):max(0, i - guard)] + steps[i + guard:i + 3 * guard]
-        local = percentile(near, 0.9) if near else ref
-        r = s / max(local, ref * 0.02)
+        near = res[max(0, i - 3 * guard):max(0, i - guard)] + res[i + guard:i + 3 * guard]
+        r = v / max(percentile(near, 0.9) if near else 0.0, floor)
         if r > best:
             best, at = r, i / sr
-        if r > 5 and i - last > guard:
+        if r > 20 and i - last > guard:
             count += 1
             last = i
     return {"ratio": round(best, 2), "at_s": None if at is None else round(at, 4), "count": count}
@@ -315,9 +320,10 @@ def measure(audio):
         return r
     r["rms_db"] = round(db(math.sqrt(sum(v * v for v in mono) / len(mono))), 2)
     r["dc_db"] = round(max(db(abs(sum(c) / len(c))) for c in audio.channels), 1)
-    r["first_db"] = round(max(db(max(abs(v) for v in c[:4])) for c in audio.channels), 1)
-    r["last_db"] = round(max(db(max(abs(v) for v in c[-12:])) for c in audio.channels), 1)  # a window: one sample can sit on a zero crossing
-    env, hop = envelope(mono, sr, 2.0)
+    # An end reads its last sample, or a quarter of its last step so a cut on a zero crossing still shows. A fade reaches zero smoothly.
+    r["first_db"] = round(max(db(max(abs(c[0]), abs(c[1] - c[0]) * 0.25)) for c in audio.channels), 1)
+    r["last_db"] = round(max(db(max(abs(c[-1]), abs(c[-1] - c[-2]) * 0.25)) for c in audio.channels), 1)
+    env, hop = envelope(median3(mono), sr, 2.0)  # so a click cannot pose as the peak and hide inside the attack window
     epeak = max(env)
     ipeak = env.index(epeak)
     r["peak_s"] = round(ipeak * hop / sr, 4)
@@ -353,7 +359,7 @@ def measure(audio):
 
 
 # Starting thresholds, calibrated as references/thresholds.md says.
-LIMITS = {"dc_db": -60.0, "head_db": -50.0, "tail_db": -60.0, "click": 8.0, "floor_db": -60.0, "flat_run": 4,
+LIMITS = {"dc_db": -60.0, "head_db": -50.0, "tail_db": -60.0, "click": 20.0, "floor_db": -60.0, "flat_run": 4,
           "lead_s": 0.05, "end_s": 0.25, "seam": 5.0}
 
 

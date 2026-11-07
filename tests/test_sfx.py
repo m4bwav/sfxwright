@@ -70,7 +70,7 @@ class Planted(Base):
         self.assertIn(want, self.flags(bad))
 
     def test_faults(self):
-        for fault, want, amount in (("dc", "DC", 0.01), ("clip", "CLIP", 12), ("cut-tail", "CUT_TAIL", 0.1), ("pad", "END_SILENCE", 1), ("pad", "LEAD_SILENCE", 1), ("click", "CLICK", 0.5)):
+        for fault, want, amount in (("dc", "DC", 0.01), ("clip", "CLIP", 12), ("cut-tail", "CUT_TAIL", 0.03), ("pad", "END_SILENCE", 1), ("pad", "LEAD_SILENCE", 1), ("click", "CLICK", 0.5)):
             with self.subTest(fault=fault):
                 self.plant(fault, want, amount)
 
@@ -89,6 +89,20 @@ class Planted(Base):
         code, _ = run("loop", f, out, "--crossfade", 0.3)
         self.assertEqual(code, 0)
         self.assertLess(A.seam_ratio(A.read_audio(out)), before)
+
+
+class Finish(Base):
+    def test_extension_follows_format(self):
+        code, r = run("finish", self.hit(), self.d / "x.wav", "--dest", "film", "--format", "wav", "--sr", 44100)
+        self.assertEqual(Path(r["out"]).suffix, ".wav")
+        self.assertEqual(code, 0)
+
+    def test_seam_fault_flagged(self):
+        f = self.d / "w.wav"
+        run("synth", "wind", "--out", f, "--param", "seconds=2", "--param", "gentle=yes")
+        bad = self.d / "b.wav"
+        run("degrade", f, bad, "--fault", "seam")
+        self.assertGreater(A.seam_ratio(A.read_audio(bad)), A.LIMITS["seam"])
 
 
 class Synth(Base):

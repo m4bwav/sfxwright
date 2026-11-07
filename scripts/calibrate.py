@@ -31,8 +31,9 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("folder")
     ap.add_argument("--limit", type=int, default=0)
+    ap.add_argument("--glob", default="*", help="file name pattern, to spread a sample across sounds")
     a = ap.parse_args()
-    files = sorted(p for p in Path(a.folder).rglob("*") if p.suffix.lower() in (".wav", ".flac", ".ogg"))
+    files = sorted(p for p in Path(a.folder).rglob(a.glob) if p.suffix.lower() in (".wav", ".flac", ".ogg"))
     if a.limit:
         files = files[:a.limit]
     false, hits, total, clean_rows = {}, {}, 0, 0
