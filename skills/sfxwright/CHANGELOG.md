@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.15, 2026-11-07
+
+Reference only, from Viers, *The Sound Effects Bible* (2008, ch. 18): `edit.md` gains Builds by event (explosion parts and trail-off, crash level contrast, automatic fire from single shots at the real rate, body falls, punches, swords, rumble, mouse-over, laser, clean attack spliced onto a fuller take) and a creature performance tip.
+
 ## 0.1.14, 2026-11-07
 
 Reference only, from Ament, *The Foley Grail* (3rd ed., ch. 5, 10 and 11): `plan.md` gains late-over-early sync tolerance (one frame late passes, one early does not), shift a whole run before moving single hits, a sync sweet spot for busy props, thinner foley under songs, foley style matched to the picture, signature sounds, and mixed footfall kinds in a walk.

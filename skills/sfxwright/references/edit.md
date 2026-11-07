@@ -66,6 +66,20 @@ From the film books, one engineer's ear each. Only `bigger` has been heard here:
 - `pitch`: 0, -3, -6, -9 semitones. Small steps suggest movement; large ones trail away.
 - `offset`: six rotated copies of a bed. The same clip started at one place only gets louder.
 
+## Builds by event
+
+Viers, *The Sound Effects Bible* (2008, ch. 18), one designer's recipes from recorded sources, untested on generated audio. Make each part a separate take, then `layer` or `place` them:
+
+- **Explosion:** concussion, then debris, then a trail-off; debris may keep falling after the trail-off ends. Trail-off: a 5 to 15 s dark reverb on the concussion, then pitch down (bright reverbs stay bright). Add a reversed, reverbed, pitched-down copy under it. A fireball fades in after the concussion's attack, so it reads as caused by it.
+- **Crash:** the first hit is the loudest thing; keep everything before and after well below it. Then plastic, glass, debris, with pitched-down copies of the hit. A skid cut at the hit means a dead stop; one running past it means speed.
+- **Automatic fire:** single shots at the real weapon's rate, different shots, each tail ringing under the next; never butt them end to end.
+- **Body fall:** two or three staggered hits, not one.
+- **Punch:** dull thump plus a wet splat, a bone crack or short reverb optional. **Sword:** whoosh lead-in, ringing strike, and a layer of the surface it hits.
+- **Rumble or LFE:** low-pass near 100 Hz (more than once), compress. Steady: white noise filtered and pitched down. Use under other sounds, rarely alone.
+- **Mouse-over:** a short sound through delay, reverse, delay, reverse, then pitch up. High beeps sound loud at low level: do not normalize them.
+- **Laser:** an impact through delays and a pitch bend, or a pitch-bent beep.
+- **Clean attack, full body:** a quiet take keeps the attack clean but loses decay; cut a clean attack from one take onto the body of another.
+
 ## Moves from theatre
 
 Fry (2019), a designer's practice, untested on generated audio:
@@ -113,7 +127,7 @@ Aikin (2004, music book, untested here): random detune beats identical repeats b
 
 ## Creatures
 
-When a mic or CC0 animal recordings exist, try those first: voice or animal, slow down, then AM, ring mod, distortion. Slowing exposes a low sample rate, as the top of the band falls with it. Generators are the low-confidence fallback.
+When a mic or CC0 animal recordings exist, try those first: voice or animal, slow down, then AM, ring mod, distortion. Perform a growl faster than wanted when it will be slowed, or it ends too long; animals are the cliche, so sweeten a voice with them rather than build on them (Viers, ch. 18). Slowing exposes a low sample rate, as the top of the band falls with it. Generators are the low-confidence fallback.
 
 ## Naming
 
