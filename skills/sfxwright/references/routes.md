@@ -14,7 +14,7 @@ One listener, blind, 12 sounds, level-matched, first take of each route with no 
 | Creature | Recorded voice or animals, slowed and processed | ElevenLabs v3, SA3 Medium | Low confidence |
 | Vehicle, machine | SA3 Medium | ElevenLabs v3 | Doppler by prompt or in post |
 | Magic, sci-fi | SA3 Medium, layered | ElevenLabs v3 | |
-| Comic stinger | SA3 Medium | musicwright when it has notes | |
+| Comic stinger | SA3 Medium | musicwright when it has a melody | Won its one blind test |
 | Silent video, commercial, local | HunyuanVideo-Foley XL, outside EU, UK, KR | LTX-2.x V2V, 10 to 15 s | Install needs a yes |
 | Silent video, hosted | Mirelo SFX 2.0 | | Read its terms |
 | Over USD 1M revenue | Hosted, or a Stability licence | Procedural and CC0 stay free | Never default to SA3 |
@@ -39,4 +39,4 @@ The ElevenLabs partner node may offer only v2, removed 2027-03-01. v3 needs the 
 
 ## Musicwright boundary
 
-Measured 2026-11-06 on four instrument prompts, this comparison not yet heard: ACE-Step 1.5 XL filled the length and ran hot (true peak up to +2.5 dBTP), with ends cut; SA3 Medium stopped early and decayed to silence, peaks -0.3 to -4.8 dB. Line for now: anything with notes, key or tempo goes to musicwright; single hits and non-musical stingers stay here. For a one-note instrument hit, prefer SA3 until a listen says otherwise.
+Blind listen 2026-11-07, one listener, one seed each, four prompts. SA3 Medium won the single piano note, the timpani hit and the comic pizzicato and slide-whistle sting; ACE-Step 1.5 XL won the three-note brass stinger. Readings had shown ACE filling the length and running hot (true peak up to +2.5 dBTP) with cut ends, so check its output. Line: a melody, key or tempo goes to musicwright; a single instrument hit or a short comic sting stays here on SA3 Medium. The comic result rests on one clip.

@@ -269,6 +269,52 @@ class Place(Base):
 
 
 class PlaceBed(Base):
+    def test_place_applies_gain(self):
+        f = self.d / "h.wav"
+        A.write_wav(f, A.Audio(8000, [[0.0] * 100 + [0.5] * 200 + [0.0] * 100]))
+        out = self.d / "bed.wav"
+        lst = self.d / "g.json"
+        run("init", lst, "--project", "g", "--use", "film", "--commercial", "no")
+        run("add", lst, "h", "--event", "e", "--kind", "one-shot", "--length", 1, "--at", 1, "--sync-class", "bed", "--gain", -6)
+        run("register", lst, "h", f)
+        code, r = run("place", lst, "--sr", 8000, "--out", out)
+        self.assertEqual(code, 0, r)
+        self.assertEqual(r["placed"][0]["gain_db"], -6.0)
+        self.assertAlmostEqual(max(A.read_audio(out).channels[0]), 0.25, places=2)
+
+    def test_layer_recipes(self):
+        f = self.d / "n.wav"
+        A.write_wav(f, A.Audio(8000, [[math.sin(i * 0.3) * (1 - i / 8000) * 0.5 for i in range(8000)]]))
+        for recipe, seconds in (("bigger", 2.0), ("pitch", 1.7), ("offset", 1.0)):
+            out = self.d / (recipe + ".wav")
+            code, r = run("layer", f, "--out", out, "--recipe", recipe, "--align", "start")
+            self.assertEqual(code, 0, r)
+            self.assertAlmostEqual(A.read_audio(out).seconds, seconds, delta=0.15, msg=recipe)
+        code, r = run("layer", f, f, "--out", self.d / "x.wav", "--recipe", "bigger")
+        self.assertNotEqual(code, 0)
+
+    def test_record_sheet(self):
+        lst = self.d / "r.json"
+        run("init", lst, "--project", "r", "--use", "game", "--commercial", "no")
+        run("add", lst, "door", "--event", "door slam", "--kind", "one-shot", "--length", 2, "--route", "record")
+        run("add", lst, "laser", "--event", "laser", "--kind", "one-shot", "--length", 1, "--route", "synth")
+        code, r = run("record-sheet", lst)
+        self.assertEqual(code, 0, r)
+        self.assertIn("door slam", r["sheet"])
+        self.assertNotIn("laser", r["sheet"])
+
+    def test_spectral_seam_sees_what_a_step_cannot(self):
+        import random
+        rng = random.Random(3)
+        bright = [rng.uniform(-0.3, 0.3) for _ in range(8192)]
+        dull, last = [], 0.0
+        for _ in range(8192):
+            last += 0.03 * (rng.uniform(-1, 1) - last)
+            dull.append(last * 6)
+        same = A.seam_spectral(A.Audio(8000, [bright + [rng.uniform(-0.3, 0.3) for _ in range(8192)]]))
+        changed = A.seam_spectral(A.Audio(8000, [bright + dull]))
+        self.assertGreater(changed, same)
+
     def test_bed_starts_where_placed(self):
         f = self.hit()
         lst = self.d / "s.json"

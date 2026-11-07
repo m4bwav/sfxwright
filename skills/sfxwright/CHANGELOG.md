@@ -1,10 +1,10 @@
 # Changelog
 
-Reference, unreleased, 2026-11-07: `references/edit.md` gains Building from parts, from Shepard, *Refining Sound* (2013). Because: a book distilled into the ai-sfx beat. Untested on generated sound.
+## 0.1.3, 2026-11-07
 
-## Unreleased, 2026-11-06
+Boundary and pilot listens applied: single hits and a comic sting stay on SA3 Medium, a melody goes to musicwright, and layering stayed in the film advice. New `add --gain` for `place`, `layer --recipe bigger|pitch|offset`, `record-sheet`, and a SEAM_SPECTRAL check on loops. A predictor click detector and shorter noise-floor frames were tested and rejected; see thresholds.md.
 
-Reference: `references/edit.md` gains found-sound moves from Murphy, *Ears to the Ground* (2024). Because: a book distilled into the downtempo beat; artists' reports, untested on generated sound.
+Reference: `references/edit.md` gains Building from parts, from Shepard, *Refining Sound* (2013), and found-sound moves from Murphy, *Ears to the Ground* (2024). Both untested on generated sound.
 
 ## 0.1.2, 2026-11-06
 

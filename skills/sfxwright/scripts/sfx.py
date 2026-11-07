@@ -20,6 +20,7 @@ needed only for `gen`; without it, `gen --workflow-out` writes the workflow to h
   sequence  place single hits into a walk or run with uneven timing
   loop      make a seamless loop and score the seam
   place     lay sounds on a timeline by their sync points and report frame errors
+  record-sheet  a recording plan for the sounds someone will record
   finish    level and format per destination       name     build or test a file name
   sheet     waveform PNG for looking               review   one clip to listen to, with times
   doc       cue sheet, implementation sheet or credits, from the list
@@ -49,7 +50,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import sfx_audio as A  # noqa: E402
 import sfx_synth as S  # noqa: E402
 
-VERSION = "0.1.2"
+VERSION = "0.1.3"
 SCHEMA = 1
 KINDS = ("one-shot", "loop", "ambience", "sequence", "stinger", "ui")
 STATUSES = ("planned", "rendered", "picked", "finished", "rejected")
@@ -214,7 +215,7 @@ def cmd_add(a):
         raise Fail("%s is already in the list" % a.id)
     s = {"id": a.id, "event": a.event, "kind": a.kind, "category": a.category or "", "brief": a.brief or "", "layers": [{"role": r} for r in (a.layers or "").split(",") if r],
          "variations": a.variations, "length_s": a.length, "loudness": a.loudness or "", "format": a.format, "route": a.route, "status": "planned", "takes": []}
-    for k, v in (("sync_point_s", a.sync_point), ("at_s", a.at), ("trigger", a.trigger), ("priority", a.priority), ("max_instances", a.max_instances), ("spatial", a.spatial), ("sync_class", a.sync_class), ("role", a.role)):
+    for k, v in (("sync_point_s", a.sync_point), ("at_s", a.at), ("trigger", a.trigger), ("priority", a.priority), ("max_instances", a.max_instances), ("spatial", a.spatial), ("sync_class", a.sync_class), ("role", a.role), ("gain_db", a.gain)):
         if v is not None:
             s[k] = v
     d["sounds"].append(s)
@@ -537,8 +538,9 @@ def cmd_check(a):
         if loop and not m.get("silent"):
             seam, via = seam_for(f, au)
             m["seam"], m["seam_via"] = seam, via
+            m["seam_spectral"] = A.seam_spectral(au)
         length = a.seconds or (s.get("length_s") if s.get("kind") in ("one-shot", "ui", "stinger") else None)
-        flags = A.flag(m, want_seconds=length, waive=tuple((a.waive or "").split(",")), loop=loop, seam=seam)
+        flags = A.flag(m, want_seconds=length, waive=tuple((a.waive or "").split(",")), loop=loop, seam=seam, spectral=m.get("seam_spectral"))
         if a.tone_match:
             m["tone_gaps_db"], extra = tone_match(f, a.tone_match)
             flags = flags + extra
@@ -792,9 +794,21 @@ def cmd_edit(a):
     return res
 
 
+def recipe_layers(au, recipe):
+    """Layers from one sound, from the books' recipes: `bigger` 100, 80, 50% speed; `pitch` 0, -3, -6, -9 semitones; `offset` six rotated copies of a bed."""
+    if recipe == "offset":
+        return [A.Audio(au.sr, [c[len(c) * i // 6:] + c[:len(c) * i // 6] for c in au.channels]) for i in range(6)]
+    speeds = {"bigger": (1.0, 0.8, 0.5), "pitch": tuple(2 ** (-st / 12) for st in (0, 3, 6, 9))}[recipe]
+    return [A.Audio(au.sr, [resample_linear(c, v) for c in au.channels]) if v != 1.0 else au for v in speeds]
+
+
 def cmd_layer(a):
     guard_edit(a.files, a.override_licence)
     parts = [A.read_audio(f) for f in a.files]
+    if a.recipe:
+        if len(parts) != 1:
+            raise Fail("--recipe builds layers from one file")
+        parts = recipe_layers(parts[0], a.recipe)
     sr = parts[0].sr
     if any(p.sr != sr for p in parts):
         raise Fail("all layers must share a sample rate; found %s" % sorted({p.sr for p in parts}))
@@ -821,8 +835,9 @@ def cmd_layer(a):
     if top > 0.89:
         mix = [[v * 0.89 / top for v in c] for c in mix]
     A.write_wav(a.out, A.Audio(sr, mix))
-    derive(a.out, a.files, {"op": "layer", "gains_db": gains, "offsets_s": offs, "align": a.align, "date": today()})
-    levels = {Path(f).name: A.measure(p).get("peak_db") for f, p in zip(a.files, parts)}
+    derive(a.out, a.files, {"op": "layer", "recipe": a.recipe, "gains_db": gains, "offsets_s": offs, "align": a.align, "date": today()})
+    names = [Path(a.files[0]).name + " #%d" % i for i in range(len(parts))] if a.recipe else [Path(f).name for f in a.files]
+    levels = {n: A.measure(p).get("peak_db") for n, p in zip(names, parts)}
     return {"ok": True, "out": a.out, "layer_peaks_db": levels, "flags": A.flag(A.measure(A.read_audio(a.out)))}
 
 
@@ -902,7 +917,28 @@ def cmd_loop(a):
     A.write_wav(a.out, res_au)
     derive(a.out, [a.input], {"op": "loop", "crossfade_s": a.crossfade, "date": today()})
     seam, via = seam_for(a.out, res_au)
-    return {"ok": True, "out": a.out, "seconds": round(res_au.seconds, 3), "seam": seam, "seam_via": via, "flags": ["SEAM"] if seam > A.LIMITS["seam"] else [], "note": "use WAV or OGG: MP3 padding breaks loops"}
+    spectral = A.seam_spectral(res_au)
+    flags = (["SEAM"] if seam > A.LIMITS["seam"] else []) + (["SEAM_SPECTRAL"] if spectral > A.LIMITS["seam_spectral"] else [])
+    return {"ok": True, "out": a.out, "seconds": round(res_au.seconds, 3), "seam": seam, "seam_via": via, "seam_spectral": spectral, "flags": flags, "note": "use WAV or OGG: MP3 padding breaks loops"}
+
+
+def cmd_record_sheet(a):
+    """A one-page recording plan for the sounds on the list that someone will record."""
+    d = load_list(a.list)
+    rows = [s for s in d["sounds"] if a.all or s.get("route") in ("record", "own", "foley", "recorded")]
+    if not rows:
+        raise Fail("no sound has route record; set the route or pass --all")
+    lines = ["# Recording sheet: %s" % d.get("project", ""), "", "Before the first take: stop the fridge, heating and fans, with your keys in the fridge so you restart it. Stand where the sound will be and listen. Clap, record and play back. Wear quiet clothes.", "",
+             "48 kHz 24-bit; 96 kHz if it will be pitched far down. Watch peaks and leave at least 6 dB. Do not cut rumble now. Say the slate before each take. Vary each take: soft, hard, short, long. Record 30 s of the room with nobody moving.", "",
+             "| Slate | Event | Layers | Length | Takes | Surface, material, distance | Done |", "|---|---|---|---|---|---|---|"]
+    for s in rows:
+        roles = ", ".join(r["role"] for r in s.get("layers", [])) or "whole"
+        lines.append("| %s | %s | %s | %g s | %d | %s |  |" % (s["id"], s["event"].replace("|", "/"), roles, s["length_s"], s["variations"] + 2, (s.get("brief") or "").replace("|", "/")))
+    text = "\n".join(lines) + "\n"
+    if a.out:
+        Path(a.out).write_text(text, encoding="utf-8", newline="\n")
+        return {"ok": True, "out": a.out, "sounds": len(rows)}
+    return {"ok": True, "sounds": len(rows), "sheet": text}
 
 
 def cmd_tone(a):
@@ -994,19 +1030,19 @@ def cmd_place(a):
         start = s["at_s"] - sp
         err = (m.get("peak_s", 0.0) - sp) * fps
         limit = 1 if s.get("sync_class", "tight") == "tight" else 2
-        report.append({"id": s["id"], "start_s": round(start, 3), "anchor": "sync_point_s" if anchored else "measured peak", "peak_vs_anchor_frames": round(err, 2), "over_limit": abs(err) > limit})
-        items.append((max(0, int(start * sr)), au))
+        report.append({"id": s["id"], "start_s": round(start, 3), "anchor": "sync_point_s" if anchored else "measured peak", "peak_vs_anchor_frames": round(err, 2), "over_limit": abs(err) > limit, "gain_db": s.get("gain_db", 0.0)})
+        items.append((max(0, int(start * sr)), au, A.undb(s.get("gain_db", 0.0))))
     if not items:
         raise Fail("no sound has both at_s and a take")
-    n = max(s + au.n for s, au in items)
+    n = max(s + au.n for s, au, _ in items)
     if a.out:
         mix = [[0.0] * n, [0.0] * n]
-        for s, au in items:
+        for s, au, k in items:
             for c in range(2):
                 src = au.channels[c % len(au.channels)]
                 dst = mix[c]
                 for i, v in enumerate(src):
-                    dst[s + i] += v
+                    dst[s + i] += v * k
         top = max(max(abs(v) for v in c) for c in mix)
         if top > 0.89:
             mix = [[v * 0.89 / top for v in c] for c in mix]
@@ -1311,6 +1347,7 @@ def build_parser():
     c.add_argument("--priority")
     c.add_argument("--max-instances", type=int, dest="max_instances")
     c.add_argument("--spatial", choices=("2D", "3D"))
+    c.add_argument("--gain", type=float, help="dB applied by place")
     c.add_argument("--sync-class", dest="sync_class", choices=("tight", "loose", "bed"))
     c.add_argument("--role", choices=("hard", "background", "foley", "design", "ui"))
     add("validate", cmd_validate).add_argument("list")
@@ -1399,6 +1436,7 @@ def build_parser():
     c.add_argument("--gains")
     c.add_argument("--offsets")
     c.add_argument("--align", default="peak", choices=("peak", "start"))
+    c.add_argument("--recipe", choices=("bigger", "pitch", "offset"), help="build the layers from one file")
     ov(c)
     c = add("vary", cmd_vary)
     c.add_argument("files", nargs="+")
@@ -1425,6 +1463,10 @@ def build_parser():
     c.add_argument("out")
     c.add_argument("--crossfade", type=float, default=1.0)
     ov(c)
+    c = add("record-sheet", cmd_record_sheet)
+    c.add_argument("list")
+    c.add_argument("--out")
+    c.add_argument("--all", action="store_true", help="every sound, not only those with a record route")
     c = add("place", cmd_place)
     c.add_argument("list")
     c.add_argument("--out")

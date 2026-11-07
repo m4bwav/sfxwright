@@ -15,6 +15,7 @@ Limits live in `LIMITS` in `sfx_audio.py`. They started as guesses from DSP book
 | NO_HEADROOM | peak | above -0.1 dB |
 | LENGTH | sound length against the brief | off by 25% or 0.05 s |
 | SEAM | end-to-start jump over the 99th percentile step | above 5 (mw.py scale when present) |
+| SEAM_SPECTRAL | log-spectrum change across the loop point over the file's 99th percentile change | above 1.0 |
 | NEAR_DUPLICATES | best-lag correlation in a set | above 0.98 |
 | LEVEL_SPREAD | RMS range in a set | above 3 dB |
 | TOO_EVEN | spread of gaps between onsets | below 0.03 |
@@ -38,6 +39,14 @@ Flags on clean, tidied generated files (of 35): CLIP 23, NO_HEADROOM 27, NOISE_F
 What it supports: trust DC, cuts and padding. Heavy clipping is caught; light clipping mostly. **CLICK misses most clicks under a loud body and NOISE_FLOOR is weak; a clean result on those two proves little.** The click limit went from 8 to 20 because 8 flagged 12 of 31 clean files.
 
 Bugs this found: a strong click posed as the peak and hid in the attack window (now read through a three-point median); fades read as cuts.
+
+## Tried and rejected, 2026-11-07
+
+A linear-predictor click detector (order 12, block by block, ratio limit 12) on the same 36 generated and 8 procedural files: +0.5 clicks 22/32 and 5/6, +0.1 4/32 and 2/6, +0.03 2/32 and 2/6, clean flags 4/36 and 2/8. That matches the current detector within noise and runs far slower, so it was not kept. A numpy prototype that also searched the attack reached 29/32 at +0.5, so the attack skip may be what limits detection; not tested further. Shorter noise-floor frames (20 ms, 100 ms steady) gave 7/12 and 1/12 at -45 and -55 dB, no better, and more clean flags (24 of 36), so they were not kept either. CLICK and NOISE_FLOOR stay weak, as above.
+
+## Spectral seam, 2026-11-07
+
+`fish-layer/seamcal.py` in the private lab: 29 wind, fire and truck takes. Good: crossfaded loops. Bad: second half low-passed at 800 Hz with RMS matched, an extreme planted change. At limit 1.0: 0 of 29 good flagged, 21 of 29 bad caught; the sample-step SEAM caught 0 of 29. At 0.8: 5 false, 24 caught. Generated and procedural beds only, not heard, no real recordings.
 
 ## Tone match
 
