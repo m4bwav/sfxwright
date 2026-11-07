@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.12, 2026-11-07
+
+`synth` gains bubbles, rain, motor and cricket, from Farnell, *Designing Sound* ch. 35, 38, 44 and 50 (written fresh from notes, no patches ported). Each passes `check` at its defaults; none has been in a blind listen yet.
+
 ## 0.1.11, 2026-11-07
 
 Reference only, from Chion, *Audio-Vision* (2019 ed.): `plan.md` From a film cut gains sync binding, material detail, the room's response to loud events, and a silent, blind, together check. Untested on generated audio.
