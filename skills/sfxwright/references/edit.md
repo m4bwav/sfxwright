@@ -12,6 +12,14 @@ A harsh sound can hide slow material: pitch train or lorry brakes down three or 
 
 Past a limited range, artifacts are the effect, not a bug to tune out. Pitch shift and frequency shift differ.
 
+## Unpleasant or wearing
+
+From Cowan, *The Effects of Sound on People* (2016, sec. 5.2). Its data is mostly transport noise and lab tests, so these are untested on generated audio.
+
+- **Screech:** in the study it reports, unpleasantness did not change with level and fell when content below 4 kHz was removed, with 1.4 and 2.8 kHz carrying it. Try cuts there before turning it down or dulling the top end.
+- **Bass-heavy sound:** dBA underrates low-frequency annoyance by 3 to 8 dB, and dBC or unweighted readings overrate it by 10 dB or more. Do not settle it with one reading.
+- **Alerts (inference):** annoyance rises with fear and lack of control and falls when a sound seems important. A repeated alert may wear less if the player can act on it and sees why it matters.
+
 ## Thin or muddy output
 
 Try a few seeds first (`--takes 4`). If none works, generate parts apart and layer: transient, body, low thump, tail. In one blind listen (five sounds, one listener, 2026-11-07) the winners were spread: first take 2, another seed 1, generated parts 1, the `bigger` recipe 1. "All about the same" was never picked, so takes do differ, but seeds won 3 of 5 with 3 of 5 clips, which is what chance gives. Layering is an option to try, not a proven upgrade. `layer` aligns peaks; offset layers a few ms apart when they phase. A weak attack wants a real transient: `synth click` or `modal` under it. Big sounds get detail from debris layers, not more low end. Add "bright, crisp" for dull output; metallic ringing may be a model artifact no prompt fixes.

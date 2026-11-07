@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.9, 2026-11-07
+
+Reference only, from Cowan, *The Effects of Sound on People* (2016): `edit.md` gains Unpleasant or wearing. Untested on generated audio.
+
 ## 0.1.8, 2026-11-07
 
 `synth list` prints every recipe, its parameters and materials. Because: the first worth A/B runs read `sfx.py` source to find them and one hit its turn cap. Evals are now graded on results by `evals/check_sfx.py`, not on calling `sfx.py`; routes stay as a separate check in `run_local.py`.
