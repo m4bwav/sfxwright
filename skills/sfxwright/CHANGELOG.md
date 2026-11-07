@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.6, 2026-11-07
+
+Reference only, from Fry, *Sound Design for the Stage* (2019): `plan.md` gains Question each sound, `edit.md` Moves from theatre, `rights.md` Recording your own. Theatre practice, untested on generated audio. Fry's advice to cut bass for distance is marked as taste, since air absorbs mainly highs.
+
 ## 0.1.5, 2026-11-07
 
 Fish and layer listen applied to `references/edit.md`: winners spread over first take, another seed, parts and `bigger`, near chance, so layering is an option and not a proven upgrade. Fix: `gen` no longer crashes with a traceback when a busy host misses one poll, and reports a refused prompt as an error.

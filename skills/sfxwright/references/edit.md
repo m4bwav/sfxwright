@@ -58,6 +58,21 @@ From the film books, one engineer's ear each. Only `bigger` has been heard here:
 - `pitch`: 0, -3, -6, -9 semitones. Small steps suggest movement; large ones trail away.
 - `offset`: six rotated copies of a bed. The same clip started at one place only gets louder.
 
+## Moves from theatre
+
+Fry (2019), a designer's practice, untested on generated audio:
+
+- **Farther away:** a close source needs more than less level. Cut the top, soften the attack, add a room. Fry also cuts bass; air absorbs mainly highs, so treat that as taste.
+- **Thicker:** copy the sound, drop it octaves at the same speed, layer it under the original.
+- **Riser:** a sharp hit, a very long reverb, then `reverse`. The reverb's length sets the rise.
+- **Drone:** slow a real sound by octaves. Under a scene it adds edge without a melody to compete with.
+- **Repeats:** the same sound repeated reads as copy and paste; set in a rhythm it reads as music.
+- **Rhythm from another sound:** gate a bed from a side chain (crowd noise opening on a heartbeat).
+- **Bait and switch:** listeners name a sound early and stop checking, so a passing car can crossfade into a wave.
+- **Voice:** mimic what no source gives, disguise it with effects, lay it in with real recordings.
+- **Very short and loud:** speakers cannot match a gunshot's crack, so the tail and its space carry it.
+- Keep layers as separate files until levels are tried in their final setting.
+
 ## On picture
 
 The Mentos pilot's layered mix beat the film's own generated sound in one blind listen on one shot, though the listener called it artificial. Layering over picture is worth trying; expect to replace takes before it convinces. Set each sound's level with `add --gain`, which `place` applies.
