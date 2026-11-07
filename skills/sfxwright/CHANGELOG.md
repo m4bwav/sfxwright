@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.13, 2026-11-07
+
+Reference only, from Collins, *Game Sound* (MIT, 2008, ch. 5 and 7): `plan.md` From a game gains what each event tells the player (warnings stay audible, a visual twin when the game must play muted), fixed, adaptive or interactive events, a dry source with the room added in the engine, object and material names, and more variants for long games.
+
 ## 0.1.12, 2026-11-07
 
 `synth` gains bubbles, rain, motor and cricket, from Farnell, *Designing Sound* ch. 35, 38, 44 and 50 (written fresh from notes, no patches ported). Each passes `check` at its defaults; none has been in a blind listen yet.
