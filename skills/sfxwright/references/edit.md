@@ -38,6 +38,16 @@ From a synthesis textbook (Shepard, *Refining Sound*, 2013). It is about music, 
 - **Shift:** pitch shift keeps partials' relation; frequency shift moves all by the same hertz and breaks it, for a less natural sound.
 - **Intensity:** a harder hit is more than louder: shorter attack and decay, longer tail. `vary` changes pitch and gain only, so make hard and soft takes apart.
 - **Distance:** longer reverb pre-delay reads closer, shorter reads farther.
+- **Wind and surf:** noise through a lowpass or bandpass. Moving the cutoff moves the apparent pitch; resonance focuses it. Resonance can also raise the level sharply, so check the peak afterwards. (Aikin, *Power Tools for Synthesizer Programming*, 2004, for this line and those below; music book, untested on generated sound.)
+- **Unstable pitch:** modulate a tone's pitch with low-pitched noise for a gargle.
+- **Bite and sweeps:** hard sync with the slave's pitch swept by an envelope gives a metallic sweep; an envelope on FM depth makes a bright attack.
+- **Ring mod:** outputs sums and differences, not the inputs. Mix some dry back to keep the pitch; at a non-simple ratio the pitch centre goes.
+- **Steady throb:** a detune in cents beats faster as pitch rises (5 cents: about 0.2 Hz at 65 Hz, 6 Hz at 2 kHz). Offset in hertz for one rate across a set of pitches.
+- **Distortion follows level:** it crunches the loud attack and spares the tail. More drive evens that out and flattens the envelope. Distort layers apart: distorting a mix at non-simple pitch ratios adds beating and roughness.
+- **Harder is also brighter:** raise the lowpass cutoff with intensity, not only the level.
+- **Big but short:** gated reverb gives a large space that stops before it covers the next sound. Slapback under 50 ms smears transients, so keep it off percussion.
+- **Space by hand:** damped highs read as natural; highs outlasting lows read as artificial. Short delay taps before a reverb set the early reflections. A 100 to 500 ms delay with 20 to 50% feedback and damping stands in for reverb on sustained sounds.
+- **True reverse reverb:** reverse the sound, add reverb, reverse the result.
 - **Wash hides detail:** early reflections alone suggest a space without the late tail that masks.
 
 ## Layer recipes
@@ -57,6 +67,8 @@ The Mentos pilot's layered mix beat the film's own generated sound in one blind 
 - One source with `vary`: pitch and gain only, so one attack. It may still machine-gun.
 - Better: several takes through `vary`, or split into segments and swap layers.
 - Start points, conventions not standards: 5 or more for frequent sounds, pitch +/-1 semitone, volume +/-1.5 dB, no immediate repeat. Noisy impacts take wider pitch; tonal and vocal sounds narrower.
+
+Aikin (2004, music book, untested here): random detune beats identical repeats but does not mimic a different strike. Detuning one layer of several works better than moving the whole sound.
 
 ## Footsteps
 

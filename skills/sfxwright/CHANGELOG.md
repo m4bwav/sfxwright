@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.4, 2026-11-07
+
+Reference only: `references/edit.md` gains shaping moves from Aikin, *Power Tools for Synthesizer Programming* (2004): noise for wind, sync, ring mod, detune in hertz, distortion by layer, reverb and delay. A music book, untested on generated sound.
+
 ## 0.1.3, 2026-11-07
 
 Boundary and pilot listens applied: single hits and a comic sting stay on SA3 Medium, a melody goes to musicwright, and layering stayed in the film advice. New `add --gain` for `place`, `layer --recipe bigger|pitch|offset`, `record-sheet`, and a SEAM_SPECTRAL check on loops. A predictor click detector and shorter noise-floor frames were tested and rejected; see thresholds.md.
