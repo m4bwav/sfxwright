@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.11, 2026-11-07
+
+Reference only, from Chion, *Audio-Vision* (2019 ed.): `plan.md` From a film cut gains sync binding, material detail, the room's response to loud events, and a silent, blind, together check. Untested on generated audio.
+
 ## 0.1.10, 2026-11-07
 
 Reference only: `thresholds.md` records TONE_MISMATCH on real room tone. The 6 dB limit stays, and one-shot flags that real tone always trips are named. No code behaviour changes.
