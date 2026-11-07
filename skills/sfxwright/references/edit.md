@@ -23,6 +23,21 @@ Say why before an edit: a fix, a feature or a fit. Copied settings do not transf
 - **Nothing in a band to boost:** EQ can only raise what exists. Light distortion adds new harmonics, but they can mask other layers, so listen to the whole.
 - **Dull or blunt front:** with a compressor, slow attack and slow release sharpen the front; a fast release undoes it. Attack and release values do not transfer between tools.
 - **Hollow after layering:** two copies under about 50 ms apart comb filter. At equal level, the nulls fall at odd multiples of 1/(2t): 1 ms nulls 500 Hz. Change the offset or the level.
+
+## Building from parts
+
+From a synthesis textbook (Shepard, *Refining Sound*, 2013). It is about music, so the use for effects is inference, untested on generated sound.
+
+- **Describe it first.** A bell: quick attack, long decay, partials that die at different rates. Then pick the method.
+- **Noise colour:** red for boomy lows, pink for rain, blue for shimmer on metal, violet for sibilance, crackle for fire.
+- **Short hits:** the timbre is in the attack, so spend layers there. Give each layer one job: a bright front, a slightly longer body for depth, a pitched blip.
+- **Metal:** inharmonic partials (FM at a non-whole ratio, additive at non-whole ratios) clang; whole ratios sound pitched. FM is touchy, so start from a working sound and move in small steps. A 10 ms delay with high feedback also turns a layer metallic.
+- **Thicker, same pitch:** detuned copies in even pairs around a centre, such as plus and minus 3 and 7 cents.
+- **Curves:** straight fades sound mechanical. Put most of the change early in a rise or a fall.
+- **Event blip:** a very fast pitch rise and fall on one layer.
+- **Shift:** pitch shift keeps partials' relation; frequency shift moves all by the same hertz and breaks it, for a less natural sound.
+- **Intensity:** a harder hit is more than louder: shorter attack and decay, longer tail. `vary` changes pitch and gain only, so make hard and soft takes apart.
+- **Distance:** longer reverb pre-delay reads closer, shorter reads farther.
 - **Wash hides detail:** early reflections alone suggest a space without the late tail that masks.
 
 ## Variation sets

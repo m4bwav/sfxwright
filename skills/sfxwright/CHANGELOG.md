@@ -1,5 +1,7 @@
 # Changelog
 
+Reference, unreleased, 2026-11-07: `references/edit.md` gains Building from parts, from Shepard, *Refining Sound* (2013). Because: a book distilled into the ai-sfx beat. Untested on generated sound.
+
 ## Unreleased, 2026-11-06
 
 Reference: `references/edit.md` gains found-sound moves from Murphy, *Ears to the Ground* (2024). Because: a book distilled into the downtempo beat; artists' reports, untested on generated sound.
