@@ -1,14 +1,16 @@
 # Routes
 
-Rankings are grade D (reading and inference) until a listening result is recorded here. No route has been ranked by ear yet.
+## Listening result, 2026-11-06
+
+One listener, blind, 12 sounds, level-matched, first take of each route with no seed fishing and no layering. Picks: SA3 Medium 10 of 12, procedural 2 of 8 (laser, campfire), SA3 Small SFX 0 of 12. Medium won the plastic button and gravel step too, against what the reading predicted. One person and one seed: strong enough to set defaults, not to prove a route is good. Vehicle, creature, magic and comic rows had only the two models to choose from. ElevenLabs and video routes were not tested, and the other rows below stay grade D (reading and inference).
 
 | Job | Default | More | Note |
 |---|---|---|---|
-| One-shot, impact, foley hit | SA3 Small SFX, batch 4 | SA3 Medium | ElevenLabs v3 if keyed and paid |
-| Footsteps | CC0 slices, or `synth footstep`, or one generated step; then `sequence` | | Never a generated walk |
-| UI | `synth click, switch, beep`, or a jsfxr-family tool | SA3 for organic UI (paper, wood) | Reports of jittery ElevenLabs UI sounds, one thread |
+| One-shot, impact, foley hit | SA3 Medium, batch 4 | SA3 Small SFX only when Medium will not fit the hardware | ElevenLabs v3 if keyed and paid |
+| Footsteps | One SA3 Medium step per take, or CC0 slices; then `sequence` | | Never a generated walk |
+| UI | SA3 Medium for a physical button; `synth click, switch, beep` when there is no model or a synthetic beep is wanted | jsfxr family | Reports of jittery ElevenLabs UI sounds, one thread |
 | Retro | `synth retro`, jsfxr, ZzFX, Bfxr2 | | No AI |
-| Ambience, loop | SA3 Medium, 15 to 60 s, `loop`, FLAC | ElevenLabs v3 `loop` | Bed plus sparse events |
+| Ambience, loop | SA3 Medium (picked for gentle wind), or `synth fire` for fire; 15 to 60 s, `loop`, FLAC | ElevenLabs v3 `loop` | Bed plus sparse events |
 | Creature | Recorded voice or animals, slowed and processed | ElevenLabs v3, SA3 Medium | Low confidence |
 | Vehicle, machine | SA3 Medium | ElevenLabs v3 | Doppler by prompt or in post |
 | Magic, sci-fi | SA3 Medium, layered | ElevenLabs v3 | |
@@ -33,8 +35,8 @@ The ElevenLabs partner node may offer only v2, removed 2027-03-01. v3 needs the 
 
 ## Recipes (`synth`, no model)
 
-`shaker, modal (material=wood|metal|glass|stone|plastic), footstep (surface=gravel|wood|stone|metal|grass|snow, state=walk|run|sneak, weight), click, switch, beep, wind (gentle=yes), fire, explosion (distance), whoosh, creak, retro (kind=coin|laser|jump|hit|explode|powerup|blip)`. Pass with `--param name=value`. Same seed, same file. They are simple models: test them against a generator by ear before calling one good enough.
+`shaker, modal (material=wood|metal|glass|stone|plastic), footstep (surface=gravel|wood|stone|metal|grass|snow, state=walk|run|sneak, weight), click, switch, beep, wind (gentle=yes), fire, explosion (distance), whoosh, creak, retro (kind=coin|laser|jump|hit|explode|powerup|blip)`. Pass with `--param name=value`. Same seed, same file. In the listen, `retro` laser and `fire` beat the models; wood, metal, switch, gravel step, gentle wind and explosion lost. So use `retro` and `fire` by choice and the others as the no-model fallback.
 
 ## Musicwright boundary
 
-Measured 2026-11-06 on four instrument prompts, not yet heard: ACE-Step 1.5 XL filled the length and ran hot (true peak up to +2.5 dBTP), with ends cut; SA3 Medium stopped early and decayed to silence, peaks -0.3 to -4.8 dB. Line for now: anything with notes, key or tempo goes to musicwright; single hits and non-musical stingers stay here. For a one-note instrument hit, prefer SA3 until a listen says otherwise.
+Measured 2026-11-06 on four instrument prompts, this comparison not yet heard: ACE-Step 1.5 XL filled the length and ran hot (true peak up to +2.5 dBTP), with ends cut; SA3 Medium stopped early and decayed to silence, peaks -0.3 to -4.8 dB. Line for now: anything with notes, key or tempo goes to musicwright; single hits and non-musical stingers stay here. For a one-note instrument hit, prefer SA3 until a listen says otherwise.

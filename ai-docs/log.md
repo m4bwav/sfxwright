@@ -8,3 +8,5 @@ Distilled 23 books Mark supplied into `books/plugin-learnings/sfx/` (five readin
 ## 2026-11-06, session 2
 
 Reddit threads read (survey section), no ranking change. Built sfx.py, sfx_audio.py, sfx_synth.py, skill, references, tests, evals. API prompt ran on PC Medium and Mac Small SFX. Bake-off rendered, 36 takes on each of Medium, Small SFX and Small SFX base; blind page built, unheard. Boundary test rendered, measured, unheard. Calibrated with planted faults, numbers in thresholds.md. Evals: all pass after three reruns, about $14 in all; baselines are not a fair comparison because graders look for sfx.py. Public repo, banner, social preview set through the browser. First wiki page saved through the browser; 12 pages by wikiwright. Integration PRs: 11 merged, threewright open, madnesswright skipped. Lab audio and host notes live in Ai/sfxwright-lab, outside this repo.
+
+Bake-off read and unblinded after Mark confirmed the fast answers were his: Medium 10, procedural 2 (laser, fire), Small SFX 0. Note 10 of 12 matched the guess because the guess was Medium nearly everywhere. Routes changed, gen prefers Medium, 0.1.1.

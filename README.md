@@ -49,7 +49,7 @@ python sfx.py timing walk.wav
 
 ## How far to trust it
 
-The route table is mostly reading and inference, and says so. The checks were tested with planted faults on a small set of sounds: DC, cuts and padding are caught reliably, while clicks under a loud sound and low noise often are not. The numbers are in [thresholds.md](skills/sfxwright/references/thresholds.md). The procedural recipes are simple models and have not yet won anything in a listening test. `ship` keeps a record and is not legal advice.
+Defaults rest on one blind listen by one person: Stable Audio 3 Medium won 10 of 12 sounds, procedural recipes 2 (laser, campfire), Small SFX none. Other routes are reading and inference, and say so. The checks were tested with planted faults on a small set of sounds: DC, cuts and padding are caught reliably, while clicks under a loud sound and low noise often are not. The numbers are in [thresholds.md](skills/sfxwright/references/thresholds.md). `ship` keeps a record and is not legal advice.
 
 ## Works with
 

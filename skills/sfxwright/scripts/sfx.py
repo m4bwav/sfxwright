@@ -49,7 +49,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import sfx_audio as A  # noqa: E402
 import sfx_synth as S  # noqa: E402
 
-VERSION = "0.1.0"
+VERSION = "0.1.1"
 SCHEMA = 1
 KINDS = ("one-shot", "loop", "ambience", "sequence", "stinger", "ui")
 STATUSES = ("planned", "rendered", "picked", "finished", "rejected")
@@ -393,7 +393,7 @@ def cmd_gen(a):
             wf, _ = build_prompt(route, a.prompt, a.seconds, a.takes, a.seed, "audio/sfx")
             Path(a.workflow_out).write_text(json.dumps(wf, indent=1), encoding="utf-8")
         return {"ok": False, "error": "no reachable ComfyUI with an audio model", "fallback": "use `sfx.py synth` or a CC0 library, or run the workflow on any ComfyUI", "workflow": a.workflow_out if wf else None}
-    candidates.sort(key=lambda c: (c[0]["busy"], c[1]["model"] != "stable_audio_3_small_sfx"))
+    candidates.sort(key=lambda c: (c[0]["busy"], "medium" not in c[1]["model"] or "base" in c[1]["model"]))
     host, route = candidates[0]
     tag = hashlib.sha1(("%s%s%s" % (a.prompt, a.seed, time.time())).encode()).hexdigest()[:8]
     wf, text = build_prompt(route, a.prompt, a.seconds, a.takes, a.seed, "audio/sfxwright_%s" % tag, host["save_advanced"])
