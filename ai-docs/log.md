@@ -34,3 +34,7 @@ Read the waiting page. Listed sfxwright in mark-local (`Ai/.claude-plugin/market
 ## 2026-11-07, session 8
 
 Mark ruled keep on the worth page, over CUT; recorded in TESTS.md and evergreen.json, no trim. No new books (newest SFX file arrived 2026-11-06) and the new beat leads are only book notes. Room tone still unrecorded. Wiki moved to 0.1.8 with `synth list`.
+
+## 2026-11-07, session 9
+
+Mark recorded the room tone. `check --tone-match` on the two takes, fills and planted faults: the 6 dB limit stays, numbers in thresholds.md, script and files in sfxwright-lab/roomtone/checks. No listening done. Another session released 0.1.9 (Cowan, reference only) without a log entry; recorded here. No new leads needing action; all nine are book notes. 0.1.10.

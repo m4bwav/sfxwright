@@ -54,7 +54,11 @@ A linear-predictor click detector (order 12, block by block, ratio limit 12) on 
 
 ## Tone match
 
-TONE_MISMATCH: any of three bands (under 300 Hz, to 3 kHz, above) differs by more than 6 dB. Calibrated on planted faults only, white noise at 8 kHz: another seed reads under the limit, 9.5 dB of gain and a one-pole dulled copy read over it. No real room tone has been tried, and nobody has listened. TONE_SHORT is a plain 5 s default, from the books' room tone advice (30 s named for exteriors), not a measurement. `tone` ignores frames under -80 dB, because generated takes pad with near-silence.
+TONE_MISMATCH: any of three bands (under 300 Hz, to 3 kHz, above) differs by more than 6 dB. Calibrated on planted faults only, white noise at 8 kHz: another seed reads under the limit, 9.5 dB of gain and a one-pole dulled copy read over it. 
+
+Real tone, 2026-11-07: two 30 s takes of one room on one webcam mic, minutes apart. The 6 dB limit stays. Whole take against whole take reads at most 1.0 dB, a 60 s fill against the other take 2.1 dB, and steady stretch against steady stretch 1.5 dB. On the same material +5 dB of gain reaches 6.5 dB and flags, +3 dB does not (4.5 dB), and a one-pole lowpass at coefficient 0.5 reads -8.3 dB in the high band. The margin is thin on short pieces: across 45 pairs of 5 s windows the worst band reached 5.7 dB, because room noises land in some windows, so compare fills and whole takes, not short cuts. A different room, a different mic and a real edit have not been tried, and nobody has listened to a fill. TONE_SHORT is a plain 5 s default, from the books' room tone advice (30 s named for exteriors), not a measurement. `tone` ignores frames under -80 dB, because generated takes pad with near-silence.
+
+Real tone always trips the checks written for one-shots: the takes flagged CUT_TAIL, LEAD_SILENCE and NOISE_FLOOR, and a fill CUT_HEAD and CUT_TAIL. Waive these on tone. `tone` kept 8.5 s of the 30 s take and 6.0 s of the other, so record well over the 5 s minimum.
 
 ## Known limits
 
