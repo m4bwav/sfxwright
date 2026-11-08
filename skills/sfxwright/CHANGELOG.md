@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.18, 2026-11-07
+
+Reference only, from Holman, *Sound for Film and Television* (3rd ed., p. 76, 161-166): `plan.md` Ambience gains scene grammar (ambience across a cut, masking split, prelap and postlap), `edit.md` gains Futz and worldize, `finish.md` gains film delivery (44.1 to 48 kHz resampling, DM&E stems for foreign versions).
+
 ## 0.1.17, 2026-11-07
 
 Reference only, from Pirkle, *Designing Audio Effect Plugins in C++* (2nd ed., sec. 15.1-15.2, 17.1-17.4, 18.2-18.7, 19.1, ch. 2): `edit.md` gains From plugin DSP (echo and resonance rules for a hand-built reverb, gating to a floor, look-ahead before a limiter, oversampling before drive, smoothing swept parameters, modulated delay starting values).
