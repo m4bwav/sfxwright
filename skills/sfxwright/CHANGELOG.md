@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.17, 2026-11-07
+
+Reference only, from Pirkle, *Designing Audio Effect Plugins in C++* (2nd ed., sec. 15.1-15.2, 17.1-17.4, 18.2-18.7, 19.1, ch. 2): `edit.md` gains From plugin DSP (echo and resonance rules for a hand-built reverb, gating to a floor, look-ahead before a limiter, oversampling before drive, smoothing swept parameters, modulated delay starting values).
+
 ## 0.1.16, 2026-11-07
 
 Reference only, from Russ, *Sound Synthesis and Sampling* (2nd ed., sec. 4.3, 6.2-6.3, 6.8.3): `edit.md` gains From synthesis and sampling (render every variant from the original, why voices and fixed-spectrum hits take small pitch moves, a short alien onset layer on the hardest hits, a fuse check for layer levels).
