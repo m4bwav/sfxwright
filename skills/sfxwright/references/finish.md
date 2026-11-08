@@ -22,7 +22,7 @@ Loudness specs measure whole mixes: EBU R128 -23 LUFS, -1 dBTP; ATSC A/85 -24 LK
 
 ## Engines
 
-- **Unity:** ADPCM about 3.5:1 for noisy repeated sounds; Decompress On Load for small sounds, where Vorbis costs about 10x in memory; Audio Random Container for playlists. Check the current manual.
+- **Unity:** ADPCM about 3.5:1 for noisy repeated sounds; Decompress On Load for small sounds, where Vorbis costs about 10x in memory; Audio Random Container for playlists. Mixer DSP: lower an Audio Source's Max Distance from the 500 default, since spatializing costs DSP while a listener is in range; send groups to one shared reverb or Duck Volume on a return rather than one per group; a duck needs a soft knee and a release of a few hundred ms, or the bed clicks and pumps. Check the current manual.
 - **Godot:** `AudioStreamRandomizer`: `random_pitch` between 1/value and value, `random_volume_offset_db`.
 - **Roblox:** mp3, ogg, wav, flac; under 20 MB and 7 minutes; up to 48 kHz; import limits and moderation apply; you must hold the rights.
 - **Unreal:** MetaSounds has procedural footstep templates.

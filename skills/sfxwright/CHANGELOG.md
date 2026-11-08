@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.20, 2026-11-07
+
+Reference only, from Lanham, *Game Audio Development With Unity 5.x* (ch. 3, 11): `finish.md` Unity line gains mixer DSP economy (Max Distance below the 500 default, one shared reverb or duck on a return, a duck with a soft knee and a longer release than the book's 10 ms).
+
 ## 0.1.19, 2026-11-07
 
 Reference only, from Yewdall, *Practical Art of Motion Picture Sound*, 4th ed. (p. 351, 489, 502-506): `finish.md` gains Foreign M&E (no holes; production effects and foley laid back in when dialogue is muted), `edit.md` gains Show kit (approved premixed recurring events, baked whip pans), `plan.md` Ambience keeps single placeable elements apart from their bed.
