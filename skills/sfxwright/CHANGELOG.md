@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.23, 2026-11-07
+
+From Bilbao, *Numerical Sound Synthesis* (sec. 1.2.2, 7.5.1): `synth modal` takes `strike` (0-1, where the object is hit; mode i is weighted by |sin(i pi strike)|, so a hit at the middle loses every second mode) and `velocity` (0-1, a harder hit is a shorter contact and a brighter sound). Left out, the sound is unchanged. Tests in `ModalStrike`. `routes.md` names both and says what the modal recipe cannot do (large-amplitude plates: cymbal crash, gong swell).
+
 ## 0.1.22, 2026-11-07
 
 Reference only, from Francis, *The Audio Effects Workshop* (ch. 3, 13, 14): `edit.md` gains level before effects (envelope over compressor for a rogue peak), effect order in a chain, and serial against parallel chains.

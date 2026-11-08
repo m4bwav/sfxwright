@@ -423,6 +423,36 @@ class ToneAndPop(Base):
         _, r = run("pop", slip, "--verify", "--fps", 24)
         self.assertEqual(r["flags"], ["POP_OFF"], r)
 
+class ModalStrike(unittest.TestCase):
+    """Bilbao sec. 1.2.2 and 7.5.1: strike point weights the modes; a harder hit is brighter."""
+
+    @staticmethod
+    def bright(x):
+        d = sum(abs(x[i] - x[i - 1]) for i in range(1, len(x)))
+        return d / (sum(abs(v) for v in x) or 1.0)
+
+    @staticmethod
+    def mode_level(x, hz, sr=44100):
+        n = min(len(x), 8192)
+        re = sum(x[i] * math.cos(2 * math.pi * hz * i / sr) for i in range(n))
+        im = sum(x[i] * math.sin(2 * math.pi * hz * i / sr) for i in range(n))
+        return math.hypot(re, im)
+
+    def test_default_unchanged(self):
+        self.assertEqual(Y.render("modal", seed=3, material="metal"), Y.render("modal", seed=3, material="metal", strike=None, velocity=None))
+
+    def test_middle_strike_drops_second_mode(self):
+        mid = Y.render("modal", seed=3, material="metal", strike=0.5)
+        edge = Y.render("modal", seed=3, material="metal", strike=0.2)
+        ratio_mid = self.mode_level(mid, 1480) / self.mode_level(mid, 610)
+        ratio_edge = self.mode_level(edge, 1480) / self.mode_level(edge, 610)
+        self.assertLess(ratio_mid, ratio_edge / 3)
+
+    def test_harder_hit_is_brighter(self):
+        soft = Y.render("modal", seed=3, material="wood", velocity=0.1)
+        hard = Y.render("modal", seed=3, material="wood", velocity=1.0)
+        self.assertGreater(self.bright(hard), self.bright(soft))
+
 
 if __name__ == "__main__":
     unittest.main()
