@@ -36,6 +36,8 @@ Build from a quiet bed plus sparse events per location, not one long take. Pract
 
 On picture, ambience carries scene grammar (Holman, *Sound for Film and Television*, 3rd ed., p. 162-165): hold a location's ambience steady across a picture cut to say same place, change it at the cut to say new scene, and a deliberate drop at a cut can tell story even where physics would keep the level. Kept low under dialogue, it masks presence jumps between shots. Give ambience the lows and foley the highs so they do not mask each other, and keep quiet and loud effects on separate tracks. To cross a scene change, a prelap (J-cut) brings the next scene's sound in early and adds energy, a postlap (L-cut) carries the old scene over; even a straight cut is a very short crossfade so it does not click.
 
+Keep single placeable elements (one cricket, a distant dog) in files of their own, apart from the bed of the same sound, so the mix can move them separately; a mixer on *Salt* put single crickets on the front channels and the cricket bed on the rest (Yewdall, *Practical Art of Motion Picture Sound*, 4th ed., p. 506).
+
 Sources: Viers, Holman, Rose, Ament (ch. 5, 10, 11), Zdanowicz and Bambrick, Fuesslin in Somberg vol. 3; Fry; an r/sounddesign thread on backgrounds.
 
 ## Name the excitation

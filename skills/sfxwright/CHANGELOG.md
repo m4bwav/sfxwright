@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.19, 2026-11-07
+
+Reference only, from Yewdall, *Practical Art of Motion Picture Sound*, 4th ed. (p. 351, 489, 502-506): `finish.md` gains Foreign M&E (no holes; production effects and foley laid back in when dialogue is muted), `edit.md` gains Show kit (approved premixed recurring events, baked whip pans), `plan.md` Ambience keeps single placeable elements apart from their bed.
+
 ## 0.1.18, 2026-11-07
 
 Reference only, from Holman, *Sound for Film and Television* (3rd ed., p. 76, 161-166): `plan.md` Ambience gains scene grammar (ambience across a cut, masking split, prelap and postlap), `edit.md` gains Futz and worldize, `finish.md` gains film delivery (44.1 to 48 kHz resampling, DM&E stems for foreign versions).
