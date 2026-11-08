@@ -30,6 +30,9 @@ Say why before an edit: a fix, a feature or a fit. Copied settings do not transf
 - **Thin alone:** judge it with its neighbours first. A layer may be right when another layer or the scene fills the band.
 - **Nothing in a band to boost:** EQ can only raise what exists. Light distortion adds new harmonics, but they can mask other layers, so listen to the whole.
 - **Dull or blunt front:** with a compressor, slow attack and slow release sharpen the front; a fast release undoes it. Attack and release values do not transfer between tools.
+- **Fix level before effects:** reach for gain, pan and a volume envelope before a processor. A rogue peak is an envelope job; a compressor there also squeezes the quiet parts and blends layers together, while an envelope keeps each layer's dynamics distinct.
+- **Order in a chain:** the later an effect sits, the more it shows. EQ before a compressor gets reshaped by it; EQ after shapes the squeezed result. A delay or reverb early in the chain comes out subtler than one placed last. Try both orders and listen.
+- **Serial or parallel:** a serial chain changes the one signal; a parallel chain mixes a processed copy (wet) back under the dry, which adds body to a thin sound without losing its attack. Francis, *The Audio Effects Workshop* (2011, ch. 3, 13, 14): music-mixing practice, untested on generated sound.
 - **Hollow after layering:** two copies under about 50 ms apart comb filter. At equal level, the nulls fall at odd multiples of 1/(2t): 1 ms nulls 500 Hz. Change the offset or the level.
 
 ## Building from parts

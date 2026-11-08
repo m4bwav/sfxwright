@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.22, 2026-11-07
+
+Reference only, from Francis, *The Audio Effects Workshop* (ch. 3, 13, 14): `edit.md` gains level before effects (envelope over compressor for a rogue peak), effect order in a chain, and serial against parallel chains.
+
 ## 0.1.21, 2026-11-07
 
 Reference only, from Zizza, *Game Audio Fundamentals* (ch. 8, 11): `plan.md` From a game gains pickups and UI tuned to the score key, overlap limits for rapid pickups, priority as the cut order for low-end ports, and estimated against actual time per asset.
