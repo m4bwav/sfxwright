@@ -133,6 +133,10 @@ Holman, *Sound for Film and Television* (3rd ed., p. 76, 162), film practice:
 - **Worldize:** replay a clean sound through a speaker in a real room and record it, moving speaker or mic for a changing colour; keep the clean take beside it so the mix can crossfade.
 - **Closer shot:** add a brighter layer in sync, since nearer sounds are louder and brighter.
 
+## Show kit
+
+From Yewdall, *Practical Art of Motion Picture Sound*, 4th ed. (p. 351, 489): design each recurring event (a door, a gunshot combo, a punch, a fall, a machine) once, get it approved, premix it to one stereo file and reuse it across the project, so heavy scenes are cut quickly on few tracks. Archive the kit with the sessions so a later cut can be rebuilt. Bake fast whip pans (lasers, ricochets) into the file; a mixer cannot pan many fast moves live.
+
 ## On picture
 
 The Mentos pilot's layered mix beat the film's own generated sound in one blind listen on one shot, though the listener called it artificial. Layering over picture is worth trying; expect to replace takes before it convinces. Set each sound's level with `add --gain`, which `place` applies.
