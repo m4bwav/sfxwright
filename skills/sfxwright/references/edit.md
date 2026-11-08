@@ -125,6 +125,14 @@ Pirkle, *Designing Audio Effect Plugins in C++* (2nd ed., 2019), an engineering 
 - **Smooth swept parameters (ch. 2):** a filter or gain sweep stepped once per block clicks (zipper noise); ramp the value every sample.
 - **Modulated delay starting points (sec. 15.1-15.2):** flanger about 1 ms with 2 to 7 ms of sweep and feedback; vibrato fully wet; chorus 1 to 30 ms with little feedback. The author calls these subjective.
 
+## Futz and worldize
+
+Holman, *Sound for Film and Television* (3rd ed., p. 76, 162), film practice:
+
+- **Phone or radio voice:** band-pass alone sounds too clean for a modern phone; add nonlinear distortion (drive, a small bad speaker impulse). The speaker on screen is heard clean, the far end futzed, and the roles swap at each cut.
+- **Worldize:** replay a clean sound through a speaker in a real room and record it, moving speaker or mic for a changing colour; keep the clean take beside it so the mix can crossfade.
+- **Closer shot:** add a brighter layer in sync, since nearer sounds are louder and brighter.
+
 ## On picture
 
 The Mentos pilot's layered mix beat the film's own generated sound in one blind listen on one shot, though the listener called it artificial. Layering over picture is worth trying; expect to replace takes before it convinces. Set each sound's level with `add --gain`, which `place` applies.

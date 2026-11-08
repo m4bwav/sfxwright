@@ -14,6 +14,8 @@ Work in WAV or FLAC; encode last. A one-shot is levelled by gain, not compressed
 
 These are file-level peak references from one book's practice (Zdanowicz and Bambrick) with no measurement behind them, not delivery specs. Upsampling adds no quality. Use `--keep-ends` on loops.
 
+Film delivery (Holman, *Sound for Film and Television*, 3rd ed., p. 161, 166): resample 44.1 kHz library files to 48 kHz before placing them on picture; unconverted they play about 8.8 percent sharp. Deliver dialogue, music and effects as separate stems (DM&E); when foreign versions are planned, keep creatures and intelligible crowd lines out of the effects stem, since they must follow the dialogue level, and put mutters in effects.
+
 Loudness specs measure whole mixes: EBU R128 -23 LUFS, -1 dBTP; ATSC A/85 -24 LKFS; Sony ASWG-R001 -24 +/-2 LKFS home, -18 +/-2 portable, over at least 30 minutes. None sets a level for one effect. Short files defeat integrated loudness gating. Balance the project by ear.
 
 ## Engines
