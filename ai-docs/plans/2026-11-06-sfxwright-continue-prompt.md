@@ -10,7 +10,7 @@ Read `sfxwright/ai-docs/HANDOFF.md`, `ai-docs/log.md`, `ai-docs/decisions/`, bot
 
 - New books: compare `books/` and `D:/RawStorage/BigDownloads/Unorganized` by file name with `books/sfx-wanted-books.md`. Distill any new or approved one by `books/plugin-learnings/INDEX.md`. Never look for or download copies.
 - Open listening or decision pages: `python askwright/skills/askwright/scripts/ask.py read <page>`; if down, `serve --detach`.
-- New `ai-sfx` beat leads: `python everscout/scripts/everscout.py leads --beat ai-sfx --since <date of last session>` (`--since` is required).
+- New `ai-sfx` beat leads: `python everscout/scripts/everscout.py leads --beat ai-sfx --since <the date HANDOFF.md was updated>` (`--since` is required).
 
 ## What waits on Mark
 
@@ -28,10 +28,10 @@ If nothing is workable without Mark, say so in two lines, print the start comman
 
 ## Rules
 
-Worktrees for shared clones. Kill by PID only. Queue behind a busy GPU and watch renders with a background loop that has a deadline. No audio without clear rights in the public repo. No AI attribution. Merge your own PRs after checks pass, leaving one open for the risk cases in the global rules. Thresholds change only with a calibration note saying what they were calibrated on. Heuristics are never presented as verdicts.
+Worktrees for shared clones. Kill by PID only. Queue behind a busy GPU and watch renders with a background loop that has a deadline. No audio without clear rights in the public repo. Thresholds change only with a calibration note saying what they were calibrated on. Heuristics are never presented as verdicts.
 
 ## Hand over
 
-Update HANDOFF.md and the log, then print this same start command with the folder:
+Run the evergreen-wrapup skill (skip quietly if absent; a failure is reported but never blocks), update HANDOFF.md and the log, then print this same start command with the folder:
 
 `Execute D:/m4bwa/Claude/Projects/Ai/sfxwright/ai-docs/plans/2026-11-06-sfxwright-continue-prompt.md`
