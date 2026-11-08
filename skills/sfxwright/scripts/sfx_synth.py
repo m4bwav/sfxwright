@@ -126,24 +126,40 @@ MATERIALS = {
 }
 
 
-def modal(sr, rng, material="wood", hardness=0.6, size=1.0, seconds=None):
-    """A struck object: a sum of decaying resonances excited by a short noisy pulse."""
+def modal(sr, rng, material="wood", hardness=0.6, size=1.0, seconds=None, strike=None, velocity=None):
+    """A struck object: a sum of decaying resonances excited by a short noisy pulse.
+
+    strike (0-1, optional): where it is hit along the object; mode i is weighted by |sin(i*pi*strike)|,
+    so a hit at the middle (0.5) drops every second mode and a hit near the end keeps the high ones
+    (Bilbao, Numerical Sound Synthesis sec. 1.2.2: modal weights come from the excitation point).
+    velocity (0-1, optional): a harder hit is a shorter contact and so a brighter sound (sec. 7.5.1).
+    Both left out: the sound is the same as before 0.1.23.
+    """
     modes = MATERIALS.get(material)
     if not modes:
         raise ValueError("material must be one of " + ", ".join(sorted(MATERIALS)))
     longest = max(t for _, t in modes)
     seconds = seconds or min(3.0, longest * 7 * size + 0.05)
     n = int(seconds * sr)
-    pulse_len = max(4, int(sr * (0.0005 + 0.004 * (1 - hardness))))
+    contact = 0.0005 + 0.004 * (1 - hardness)
+    bright = 800 + 14000 * hardness
+    if velocity is not None:
+        v = min(1.0, max(0.0, float(velocity)))
+        contact *= 1.6 - 1.2 * v
+        bright *= 0.5 + v
+    pulse_len = max(4, int(sr * contact))
     pulse = [math.sin(math.pi * i / pulse_len) ** 2 for i in range(pulse_len)]
     exc = [p * (0.6 + 0.4 * rng.uniform(-1, 1)) for p in pulse] + [0.0] * (n - pulse_len)
-    exc = _lp(exc, 800 + 14000 * hardness, sr)
+    exc = _lp(exc, min(bright, sr * 0.45), sr)
     parts = []
     for i, (f, t) in enumerate(modes):
         hz = f / size * rng.uniform(0.985, 1.015)
         res = _resonator(exc, hz, t * size * rng.uniform(0.9, 1.1), sr)
         top = max(abs(v) for v in res) or 1.0
-        parts.append((rng.uniform(0.6, 1.0) / (i + 1) ** (1.3 - hardness * 0.8) / top, 0, res))
+        gain = rng.uniform(0.6, 1.0) / (i + 1) ** (1.3 - hardness * 0.8) / top
+        if strike is not None:
+            gain *= 0.05 + abs(math.sin((i + 1) * math.pi * min(1.0, max(0.0, float(strike)))))
+        parts.append((gain, 0, res))
     return _finish(_mix(n, *parts), sr, attack_ms=0.05)
 
 
