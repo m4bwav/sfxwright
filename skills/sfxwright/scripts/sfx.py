@@ -50,7 +50,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import sfx_audio as A  # noqa: E402
 import sfx_synth as S  # noqa: E402
 
-VERSION = "0.1.20"
+VERSION = "0.1.21"
 SCHEMA = 1
 KINDS = ("one-shot", "loop", "ambience", "sequence", "stinger", "ui")
 STATUSES = ("planned", "rendered", "picked", "finished", "rejected")

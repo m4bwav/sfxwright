@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.21, 2026-11-07
+
+Reference only, from Zizza, *Game Audio Fundamentals* (ch. 8, 11): `plan.md` From a game gains pickups and UI tuned to the score key, overlap limits for rapid pickups, priority as the cut order for low-end ports, and estimated against actual time per asset.
+
 ## 0.1.20, 2026-11-07
 
 Reference only, from Lanham, *Game Audio Development With Unity 5.x* (ch. 3, 11): `finish.md` Unity line gains mixer DSP economy (Max Distance below the 500 default, one shared reverb or duck on a return, a duck with a soft knee and a longer release than the book's 10 ms).
