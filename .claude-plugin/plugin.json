@@ -1,6 +1,6 @@
 {
   "name": "sfxwright",
-  "version": "0.1.16",
+  "version": "0.1.17",
   "description": "Plan, make, edit, check and document sound effects: a sound list on disk, procedural recipes with no model, any ComfyUI, variation sets and loops by script, measured checks, and per-file provenance that answers whether a project can ship them. Evergreen.",
   "author": {
     "name": "Mark Rogers"

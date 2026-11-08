@@ -114,6 +114,17 @@ Russ, *Sound Synthesis and Sampling* (2nd ed., 2008, sec. 4.3.1-4.3.2, 6.2-6.3, 
 - **Familiar plus alien:** keep the recognisable layer and add a short blip of an unexpected timbre at the onset, with no sustain and a short decay. On intensity tiers, let it sound only on the hardest hits, since harder hits have richer spectra.
 - **Fuse check:** raise one layer against the other until the two stop sounding like two sounds. Stop there.
 
+## From plugin DSP
+
+Pirkle, *Designing Audio Effect Plugins in C++* (2nd ed., 2019), an engineering book for plugin authors, untested on generated audio:
+
+- **Reverb built from delays (sec. 17.2-17.3):** the tail needs fast echoes (Schroeder at least 1,000 a second, Griesinger 10,000) or it flutters, and many spread resonances or it rings metallic. Pick comb delays with no simple ratio between them, set each comb's feedback from its own delay and the wanted decay so all die together, flip every other comb's sign, add all-pass stages to smear the echoes, and damp the highs in the tail.
+- **Gate to a floor (sec. 18.2.2):** a hard gate to silence clicks; stop it short of silence or use an expander steeper than about 20:1.
+- **Look ahead before a limiter (sec. 18.7):** a detector with any attack misses the first peak; delay the main path by about the attack time.
+- **Oversample before drive (sec. 19.1):** saturation and clipping add harmonics, and those above Nyquist fold back as aliasing. Asymmetric drive adds even harmonics, symmetric only odd; several mild stages sound richer than one hard one (sec. 19.2).
+- **Smooth swept parameters (ch. 2):** a filter or gain sweep stepped once per block clicks (zipper noise); ramp the value every sample.
+- **Modulated delay starting points (sec. 15.1-15.2):** flanger about 1 ms with 2 to 7 ms of sweep and feedback; vibrato fully wet; chorus 1 to 30 ms with little feedback. The author calls these subjective.
+
 ## On picture
 
 The Mentos pilot's layered mix beat the film's own generated sound in one blind listen on one shot, though the listener called it artificial. Layering over picture is worth trying; expect to replace takes before it convinces. Set each sound's level with `add --gain`, which `place` applies.
