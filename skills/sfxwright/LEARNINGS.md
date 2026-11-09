@@ -23,3 +23,6 @@ Trigger: worth A/B baseline. On these cases it declined the lightsaber copy, fou
 
 ## 2026-11-07 Prove a grader on the skill's real output
 Trigger: `film-sync` failed 3 of 3 with the skill because the checker took a row's `layers` list for the sound rows. My proof list had two rows with no layers. Fix: shallowest list wins; run a checker on one kept with-arm folder before reading a 0%.
+
+## 2026-11-08 `sequence --limp` bunched steps instead of spacing them
+Trigger: Lovecraft Zann stair bed. `sequence step_02 step_03 --count 5 --gap 1.45 --jitter 0.12 --limp 0.1 --seed 7` gave events [0.0, 1.413, 1.56, 3.152, 3.295]: every second gap shrank to about 0.15 s, the opposite of "every second gap is this much longer". Without `--limp` (jitter 0.08) the events were even: [0.0, 1.426, 2.928, 4.473, 5.95]. Not yet traced in `sfx.py`; check the limp arithmetic and add a test that the gaps alternate long and short. Also: Mark, 2026-11-07, called the procedural `creak` + `footstep` stair bed "terrible and nothing like creaking", a second listener agreeing with routes.md; SA3 Medium takes replaced it (unheard by the agent). Retire once a test covers limp.
