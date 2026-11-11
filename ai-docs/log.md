@@ -38,3 +38,7 @@ Mark ruled keep on the worth page, over CUT; recorded in TESTS.md and evergreen.
 ## 2026-11-07, session 9
 
 Mark recorded the room tone. `check --tone-match` on the two takes, fills and planted faults: the 6 dB limit stays, numbers in thresholds.md, script and files in sfxwright-lab/roomtone/checks. No listening done. Another session released 0.1.9 (Cowan, reference only) without a log entry; recorded here. No new leads needing action; all nine are book notes. 0.1.10.
+
+## 2026-11-11, works-with docs
+
+README "Works with" section and a wiki Works-With page now say what crosses each way between sfxwright and its partner plugins, and why the pair helps. Taken from the partner mentions in each plugin's skills.
