@@ -53,6 +53,13 @@ Defaults rest on one blind listen by one person: Stable Audio 3 Medium won 10 of
 
 ## Works with
 
-Each is optional and sfxwright works without it: musicwright (`mw.py` seam and master), askwright (listening pages), comfyui-gen (host rules), cinewright and the game plugins (they read `sounds.json`).
+Each partner is optional. sfxwright works on its own, and every pairing goes through files on disk, not imports.
 
-More in the [wiki](https://github.com/m4bwav/sfxwright/wiki). MIT licence.
+- [musicwright](https://github.com/m4bwav/musicwright): anything with notes, key or tempo goes to musicwright, and single hits and non-musical stings stay here. Its `mw.py` seam and master steps finish a loop or a cue. You get one sound world without either plugin guessing at the other's job.
+- [voicewright](https://github.com/m4bwav/voicewright): dialogue and its room tone go there. Effects and voices end up in separate files, so a mix can move one without the other.
+- [cinewright](https://github.com/m4bwav/cinewright): a shot list becomes a sound list, and cinewright reads `sounds.json` back when it cuts the film. Sound gets planned per shot instead of patched in at the end.
+- [askwright](https://github.com/m4bwav/askwright): picks go on a blind, level-matched listening page. Numbers catch clicks and clipping, but only a listen tells you whether a sound suits its picture.
+- [grindwright](https://github.com/m4bwav/grindwright): in a long game or film project, the sound lane stays open while sfxwright is installed, so sounds get made between other jobs instead of all at the end.
+- [everscout](https://github.com/m4bwav/everscout): the `ai-sfx` beat brings in new models and licence news, so refreshes start from leads instead of a cold search.
+
+More on the wiki's [Works with](https://github.com/m4bwav/sfxwright/wiki/Works-With) page.
