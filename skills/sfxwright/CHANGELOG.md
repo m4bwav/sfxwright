@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.24, 2026-11-13
+
+`check --mono` reads the loss when channels are summed and flags MONO_LOSS above 3 dB; it runs by itself for `spatial: 3D` list sounds, which also get STEREO_3D when the file is stereo. `layer` warns ONSETS_COINCIDE when two layers' first onsets fall within 3 ms (skipped for the `offset` bed recipe). plan.md gains the job-first gate, 3D sounds ship mono, a repeated-trigger test before handover and 6 to 8 footstep takes per surface; edit.md gains layer staging and a note on tail spread in a set. Tests in `MonoFold` and `LayerOnsets`. Because: Zdanowicz and Bambrick, *The Game Audio Strategy Guide* (ch. 3, 8); measurements in thresholds.md.
+
 ## 0.1.23, 2026-11-07
 
 From Bilbao, *Numerical Sound Synthesis* (sec. 1.2.2, 7.5.1): `synth modal` takes `strike` (0-1, where the object is hit; mode i is weighted by |sin(i pi strike)|, so a hit at the middle loses every second mode) and `velocity` (0-1, a harder hit is a shorter contact and a brighter sound). Left out, the sound is unchanged. Tests in `ModalStrike`. `routes.md` names both and says what the modal recipe cannot do (large-amplitude plates: cymbal crash, gong swell).

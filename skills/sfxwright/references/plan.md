@@ -4,6 +4,8 @@ Ask only what changes the list: medium, platform and memory limit, style, hero s
 
 ## From a game
 
+Give each sound a job before it gets a file: feedback (did my action land), mood, space (where am I, how big), identity (whose sound is this) or pacing (what is about to happen). An object with no job gets no sound; a list that sounds everything turns to clutter. Sounds placed in 3D ship mono: the engine pans and attenuates them, and a stereo file built wide can cancel when summed, so run `check --mono` (on by default for `spatial: 3D`). Before handover, fire each event fast and over and over (kick one crate ten times, spam the button) to find the events that need a `max_instances`, a `priority` or a cooldown. Zdanowicz and Bambrick, *The Game Audio Strategy Guide* (Routledge, 2020, ch. 3 and 8): practitioner advice, book rule, unverified except the mono check.
+
 List by category with `event`, `trigger`, `kind`, `spatial`, `priority`, `max_instances`. Mark hero sounds; they earn the budget. For each subcategory ask: would a player notice if this axis went away, is it heard often enough to pay for itself, can a parameter do it instead of a file? `sfx.py plan` prints the three shapes side by side. Tiers for repeated actions: soft, medium, large, over the top, each close and far when distance matters.
 
 Mark what each event tells the player. A warning (an enemy closing in, a boulder rolling nearer and louder), a confirmation or a direction to look must stay audible over the mix and distinct from its neighbours, and if the game must play muted (phones in public), each needs a visual twin. Say how each event moves: fixed (a cutscene), adaptive (follows game state or a timer, such as birds by day and crickets at night) or interactive (the player sets it off, such as a sword swing). Record a dry source once and let the engine add the room per location instead of a file per room. Name impacts by object and material, such as `sword_wood_impact01`, so missing pairs show. A game played for tens of hours needs more variants of its often-heard sounds than a short one. Collins, *Game Sound* (MIT, 2008, ch. 5 and 7): taken from 2000s practice, so check it against current middleware.
@@ -26,7 +28,7 @@ A lone effect with nothing around it (one car in an otherwise silent street) rea
 
 ## Footsteps
 
-The brief needs character, weight shift, shoe and exact surface. Plan single hits per surface, then a sequence. Mix footfall kinds in one walk (some heel-toe, some flat, a scuff, a weight shift): all flat or all heel-toe sounds performed. A prop pickup may be heard where life is silent, but keep the scrape short.
+The brief needs character, weight shift, shoe and exact surface. For the player on a budget project, plan 6 to 8 takes per surface; NPCs can share a set per group (book rule, unverified). Plan single hits per surface, then a sequence. Mix footfall kinds in one walk (some heel-toe, some flat, a scuff, a weight shift): all flat or all heel-toe sounds performed. A prop pickup may be heard where life is silent, but keep the scrape short.
 
 ## Foley and cloth
 
