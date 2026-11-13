@@ -18,7 +18,12 @@ Limits live in `LIMITS` in `sfx_audio.py`. They started as guesses from DSP book
 | SEAM_SPECTRAL | log-spectrum change across the loop point over the file's 99th percentile change | above 1.0 |
 | NEAR_DUPLICATES | best-lag correlation in a set | above 0.98 |
 | LEVEL_SPREAD | RMS range in a set | above 3 dB |
+| MONO_LOSS | power lost when channels are summed, against their mean | above 3 dB |
 | TOO_EVEN | spread of gaps between onsets | below 0.03 |
+
+## Mono fold-down, 2026-11-13
+
+Two unrelated channels lose 3.0 dB when summed, so a loss above that means some content cancels, not just width. Measured on this machine: 87 generated SFX takes (Stable Audio, stereo) median 0.0, 90th percentile 1.3, max 3.1 dB, so 1 of 87 flags; 38 stereo music renders max 4.6 dB, 2 flag. Planted on 22 of those takes: one channel inverted 22/22 flagged; a 10 ms channel delay 15/22; a 0.5 ms delay 4/22 (a narrow comb, mostly missed). Not heard.
 
 ## Calibration, 2026-11-06
 

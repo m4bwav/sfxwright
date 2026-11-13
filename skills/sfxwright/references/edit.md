@@ -22,7 +22,7 @@ From Cowan, *The Effects of Sound on People* (2016, sec. 5.2). Its data is mostl
 
 ## Thin or muddy output
 
-Try a few seeds first (`--takes 4`). If none works, generate parts apart and layer: transient, body, low thump, tail. In one blind listen (five sounds, one listener, 2026-11-07) the winners were spread: first take 2, another seed 1, generated parts 1, the `bigger` recipe 1. "All about the same" was never picked, so takes do differ, but seeds won 3 of 5 with 3 of 5 clips, which is what chance gives. Layering is an option to try, not a proven upgrade. `layer` aligns peaks; offset layers a few ms apart when they phase. A weak attack wants a real transient: `synth click` or `modal` under it. Big sounds get detail from debris layers, not more low end. Add "bright, crisp" for dull output; metallic ringing may be a model artifact no prompt fixes.
+Try a few seeds first (`--takes 4`). If none works, generate parts apart and layer: transient, body, low thump, tail. Stage the layers a few ms apart with `--offsets` rather than stacking every attack on one sample, then dip the gain just after the head so the body does not bury it; every layer at full level from the same instant makes a wall of sound with no front. `layer` warns ONSETS_COINCIDE when two first onsets land within 3 ms (Zdanowicz and Bambrick, ch. 3, book rule, unverified). In one blind listen (five sounds, one listener, 2026-11-07) the winners were spread: first take 2, another seed 1, generated parts 1, the `bigger` recipe 1. "All about the same" was never picked, so takes do differ, but seeds won 3 of 5 with 3 of 5 clips, which is what chance gives. Layering is an option to try, not a proven upgrade. `layer` aligns peaks; offset layers a few ms apart when they phase. A weak attack wants a real transient: `synth click` or `modal` under it. Big sounds get detail from debris layers, not more low end. Add "bright, crisp" for dull output; metallic ringing may be a model artifact no prompt fixes.
 
 Say why before an edit: a fix, a feature or a fit. Copied settings do not transfer between sources. These moves come from music mixing (Case, *Sound FX*, 2007). None has been heard on generated sound, so treat each number as a starting point:
 
@@ -148,6 +148,7 @@ The Mentos pilot's layered mix beat the film's own generated sound in one blind 
 
 - One source with `vary`: pitch and gain only, so one attack. It may still machine-gun.
 - Better: several takes through `vary`, or split into segments and swap layers.
+- Tails: a set whose takes ring out for clearly different times (one dry, one in a hall) reads as two palettes. Listen for it; `set` does not measure it.
 - Start points, conventions not standards: 5 or more for frequent sounds, pitch +/-1 semitone, volume +/-1.5 dB, no immediate repeat. Noisy impacts take wider pitch; tonal and vocal sounds narrower.
 
 Aikin (2004, music book, untested here): random detune beats identical repeats but does not mimic a different strike. Detuning one layer of several works better than moving the whole sound.

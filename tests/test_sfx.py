@@ -454,5 +454,41 @@ class ModalStrike(unittest.TestCase):
         self.assertGreater(self.bright(hard), self.bright(soft))
 
 
+class MonoFold(Base):
+    def stereo(self, name, flip):
+        a = A.read_audio(self.hit())
+        L = a.mono()
+        f = self.d / name
+        A.write_wav(f, A.Audio(a.sr, [L, [-v for v in L] if flip else list(L)]))
+        return f
+
+    def test_readings(self):
+        import random
+        rng = random.Random(3)
+        n = 20000
+        L = [rng.uniform(-0.5, 0.5) for _ in range(n)]
+        R = [rng.uniform(-0.5, 0.5) for _ in range(n)]
+        self.assertEqual(A.mono_loss(A.Audio(48000, [L])), 0.0)
+        self.assertLess(A.mono_loss(A.Audio(48000, [L, L])), 0.01)
+        self.assertAlmostEqual(A.mono_loss(A.Audio(48000, [L, R])), 3.0, delta=0.2)
+
+    def test_check_flags_phase(self):
+        code, r = run("check", self.stereo("bad.wav", True), self.stereo("good.wav", False), "--mono", "--json")
+        flags = {x["file"]: x["flags"] for x in r["files"]}
+        self.assertIn("MONO_LOSS", flags["bad.wav"])
+        self.assertNotIn("MONO_LOSS", flags["good.wav"])
+        code, r = run("check", self.stereo("bad2.wav", True), "--json")
+        self.assertNotIn("MONO_LOSS", r["files"][0]["flags"])
+
+
+class LayerOnsets(Base):
+    def test_coincident_warned_staged_not(self):
+        f = self.hit()
+        code, r = run("layer", f, f, "--out", self.d / "a.wav", "--align", "start")
+        self.assertTrue(any("ONSETS_COINCIDE" in w for w in r.get("warnings", [])))
+        code, r = run("layer", f, f, "--out", self.d / "b.wav", "--align", "start", "--offsets", "0,0.008")
+        self.assertNotIn("warnings", r)
+
+
 if __name__ == "__main__":
     unittest.main()

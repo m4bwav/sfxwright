@@ -50,7 +50,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import sfx_audio as A  # noqa: E402
 import sfx_synth as S  # noqa: E402
 
-VERSION = "0.1.23"
+VERSION = "0.1.24"
 SCHEMA = 1
 KINDS = ("one-shot", "loop", "ambience", "sequence", "stinger", "ui")
 STATUSES = ("planned", "rendered", "picked", "finished", "rejected")
@@ -552,6 +552,12 @@ def cmd_check(a):
             m["seam_spectral"] = A.seam_spectral(au)
         length = a.seconds or (s.get("length_s") if s.get("kind") in ("one-shot", "ui", "stinger") else None)
         flags = A.flag(m, want_seconds=length, waive=tuple((a.waive or "").split(",")), loop=loop, seam=seam, spectral=m.get("seam_spectral"))
+        if a.mono or s.get("spatial") == "3D":
+            m["mono_loss_db"] = A.mono_loss(au)
+            if m["mono_loss_db"] > A.LIMITS["mono_loss_db"]:
+                flags = flags + ["MONO_LOSS"]
+            if s.get("spatial") == "3D" and len(au.channels) > 1:
+                flags = flags + ["STEREO_3D"]
         if a.tone_match:
             m["tone_gaps_db"], extra = tone_match(f, a.tone_match)
             flags = flags + extra
@@ -849,7 +855,23 @@ def cmd_layer(a):
     derive(a.out, a.files, {"op": "layer", "recipe": a.recipe, "gains_db": gains, "offsets_s": offs, "align": a.align, "date": today()})
     names = [Path(a.files[0]).name + " #%d" % i for i in range(len(parts))] if a.recipe else [Path(f).name for f in a.files]
     levels = {n: A.measure(p).get("peak_db") for n, p in zip(names, parts)}
-    return {"ok": True, "out": a.out, "layer_peaks_db": levels, "flags": A.flag(A.measure(A.read_audio(a.out)))}
+    res = {"ok": True, "out": a.out, "layer_peaks_db": levels, "flags": A.flag(A.measure(A.read_audio(a.out)))}
+    same = [] if a.recipe == "offset" else coincident_onsets(parts, starts, names, sr)  # a bed has no single onset
+    if same:
+        res["warnings"] = ["ONSETS_COINCIDE: %s and %s start within %d ms; stage them a few ms apart with --offsets" % (x, y, ONSET_MS) for x, y in same]
+    return res
+
+
+ONSET_MS = 3
+
+
+def coincident_onsets(parts, starts, names, sr):
+    """Pairs of layers whose first onsets land within ONSET_MS of each other in the mix."""
+    at = []
+    for p, s, n in zip(parts, starts, names):
+        on = A.onsets(p.mono(), sr)
+        at.append((s / sr + (on[0] if on else A.measure(p).get("lead_silence_s", 0.0)), n))
+    return [(at[i][1], at[j][1]) for i in range(len(at)) for j in range(i + 1, len(at)) if abs(at[i][0] - at[j][0]) * 1000 < ONSET_MS]
 
 
 def cmd_vary(a):
@@ -1406,6 +1428,7 @@ def build_parser():
     c.add_argument("--seconds", type=float, help="expected sound length")
     c.add_argument("--loop", action="store_true")
     c.add_argument("--waive", help="comma-separated flags this brief allows, such as CLICK for crackle")
+    c.add_argument("--mono", action="store_true", help="fold to mono and flag a loss over 3 dB; on by default for 3D sounds in a list")
     c.add_argument("--tone-match", help="a neighbouring recording: flag a fill whose bands do not match it")
     c.add_argument("--json", action="store_true")
     c = add("tone", cmd_tone)

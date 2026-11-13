@@ -405,9 +405,23 @@ def measure(audio):
     return r
 
 
+def mono_loss(audio):
+    """dB lost when the channels are summed to mono, against their mean power. 0 for mono or identical channels, about 3 for unrelated ones."""
+    if len(audio.channels) < 2:
+        return 0.0
+    chans = audio.channels
+    n = min(len(c) for c in chans)
+    k = len(chans)
+    pw = sum(sum(v * v for v in c[:n]) for c in chans) / (k * n)
+    if pw <= 0:
+        return 0.0
+    summed = sum((sum(c[i] for c in chans) / k) ** 2 for i in range(n)) / n
+    return round(min(60.0, -10 * math.log10(max(summed, 1e-12) / pw)), 2)
+
+
 # Starting thresholds, calibrated as references/thresholds.md says.
 LIMITS = {"tone_gap_db": 6.0, "dc_db": -60.0, "head_db": -50.0, "tail_db": -60.0, "click": 20.0, "floor_db": -60.0, "flat_run": 4,
-          "lead_s": 0.05, "end_s": 0.25, "seam": 5.0, "seam_spectral": 1.0}
+          "lead_s": 0.05, "end_s": 0.25, "seam": 5.0, "seam_spectral": 1.0, "mono_loss_db": 3.0}
 
 
 def flag(m, want_seconds=None, waive=(), loop=False, seam=None, spectral=None):
