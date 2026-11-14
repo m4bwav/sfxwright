@@ -342,16 +342,31 @@ def explosion(sr, rng, seconds=3.5, distance=0.0):
     return _finish(_mix(n, *parts), sr, fade_ms=60, attack_ms=0.02)
 
 
-def whoosh(sr, rng, seconds=0.8, lo=300.0, hi=4200.0, q=1.2):
-    """Filtered noise with a band sweeping up and back, loudest at the pass."""
+def _doppler(t, speed, near=0.25):
+    """Pitch ratio and gain of a source passing a listener at time t (0-1), closest at t=0.5.
+
+    speed is the source speed over the speed of sound. The pitch falls fastest and the level peaks at the
+    closest point (Loy, Musimathics vol. 1 sec. 7.12; book rule, checked only by the unit test).
+    """
+    x = (t - 0.5) * 2
+    dist = math.hypot(x, near)
+    return 1 / (1 + speed * x / dist), near / dist
+
+
+def whoosh(sr, rng, seconds=0.8, lo=300.0, hi=4200.0, q=1.2, passby=0.0):
+    """Filtered noise with a band sweeping up and back, loudest at the pass; passby=0.05-0.5 bends it like a passing source instead."""
     n = int(seconds * sr)
     x = _noise(n, rng)
     y1 = y2 = 0.0
     out = []
+    mid = math.sqrt(lo * hi)
     for i in range(n):
         t = i / n
         shape = math.sin(math.pi * t) ** 2
         f = lo + (hi - lo) * shape
+        if passby:
+            ratio, gain = _doppler(t, float(passby))
+            f, shape = min(hi, mid * ratio), gain * math.sin(math.pi * t) ** 0.5
         w = 2 * math.pi * f / sr
         al = math.sin(w) / (2 * q)
         y = (al * x[i] + 2 * math.cos(w) * y1 - (1 - al) * y2) / (1 + al)
@@ -529,9 +544,26 @@ def cricket(sr, rng, seconds=4.0, carrier=4500.0, pulses=7, period=0.7, pulse_ra
     return _finish(out, sr, fade_ms=20, attack_ms=1)
 
 
+def pluck(sr, rng, hz=220.0, t60=0.8):
+    """Plucked string (Karplus-Strong): a noise-filled delay line fed back through a two-point average; highs die first."""
+    n = int(t60 * 1.6 * sr)
+    damp = 10 ** (-3.0 / (t60 * float(hz)))
+    size = max(2, int(round(sr / float(hz) - 0.5)))
+    line = _noise(size, rng)
+    mean = sum(line) / size
+    line = [v - mean for v in line]  # a DC offset would never decay and would sit under the tail as a floor
+    out = []
+    for i in range(n):
+        j = i % size
+        v = line[j]
+        out.append(v)
+        line[j] = damp * 0.5 * (v + line[(i + 1) % size])
+    return _finish(out, sr, attack_ms=2.0)
+
+
 RECIPES = {"shaker": shaker, "modal": modal, "footstep": footstep, "click": click, "switch": switch, "beep": beep, "wind": wind,
            "fire": fire, "explosion": explosion, "whoosh": whoosh, "creak": creak, "retro": retro,
-           "bubbles": bubbles, "rain": rain, "motor": motor, "cricket": cricket}
+           "bubbles": bubbles, "rain": rain, "motor": motor, "cricket": cricket, "pluck": pluck}
 
 
 def describe():

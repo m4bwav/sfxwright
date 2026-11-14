@@ -454,6 +454,35 @@ class ModalStrike(unittest.TestCase):
         self.assertGreater(self.bright(hard), self.bright(soft))
 
 
+class PluckAndPassby(unittest.TestCase):
+    def test_pluck_sounds_decays_and_holds_pitch(self):
+        for hz in (110.0, 220.0, 440.0):
+            with self.subTest(hz=hz):
+                x = Y.render("pluck", seed=2, hz=hz)
+                self.assertGreater(max(abs(v) for v in x), 0.5)
+                q = len(x) // 4
+                head = sum(v * v for v in x[:q])
+                tail = sum(v * v for v in x[-q:])
+                self.assertLess(tail, head / 100)
+                mags = A.magnitudes(x[len(x) // 4:], 16384)  # after the first quarter the highs have died, as in a string
+                top = max(mags[1:])
+                k = next(i for i in range(2, len(mags) - 1) if mags[i] > 0.3 * top and mags[i] >= mags[i - 1] and mags[i] >= mags[i + 1])
+                peak = k * 44100 / 16384  # lowest strong spectral peak: the fundamental
+                self.assertLess(abs(peak - hz) / hz, 0.02)
+
+    def test_passby_bends_fastest_and_peaks_at_closest_point(self):
+        ts = [i / 1000 for i in range(1001)]
+        curve = [Y._doppler(t, 0.3) for t in ts]
+        bend = [abs(curve[i + 1][0] - curve[i][0]) for i in range(1000)]
+        self.assertLess(abs(bend.index(max(bend)) - 500), 40)
+        gains = [g for _, g in curve]
+        self.assertLess(abs(gains.index(max(gains)) - 500), 10)
+        self.assertGreater(curve[0][0], 1.0)
+        self.assertLess(curve[-1][0], 1.0)
+        self.assertEqual(Y.render("whoosh", seed=3), Y.render("whoosh", seed=3, passby=0.0))
+        self.assertTrue(any(Y.render("whoosh", seed=3, passby=0.3)))
+
+
 class MonoFold(Base):
     def stereo(self, name, flip):
         a = A.read_audio(self.hit())

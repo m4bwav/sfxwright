@@ -1,6 +1,9 @@
 # Changelog
 
-## Unreleased
+## 0.1.26, 2026-11-14
+
+`synth pluck` (Karplus-Strong: hz, t60) and `whoosh --param passby=0.05-0.5`, which bends pitch fastest and peaks loudness at the closest point like a passing source; default whoosh is unchanged. thresholds.md: tuned hits need about 30 ms of body. Tests in `PluckAndPassby` (pitch within 1% at 110-440 Hz by FFT peak). An FM bell was built and failed `check` (CLICK, END_SILENCE), so it is not shipped. Because: Loy, *Musimathics* vols. 1-2 (sec. 6.10, 7.12, 9.4.8, 9.7.1); hit length a book rule, unverified; none heard.
+
 
 edit.md: Rubber Band (R3, --formant, --pitchmap/--timemap) for pitch shifts that keep length or follow a path. Because: musicwright slide guitar study, 2026-11-13; unverified by listening.
 
