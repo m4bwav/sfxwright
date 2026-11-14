@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+edit.md: Rubber Band (R3, --formant, --pitchmap/--timemap) for pitch shifts that keep length or follow a path. Because: musicwright slide guitar study, 2026-11-13; unverified by listening.
+
 ## 0.1.25, 2026-11-13
 
 `sequence --walkers N` overlays N walkers with their own phase and pace for a group footstep bed; default 1 is unchanged. plan.md Footsteps: three or more walkers get one group bed matched to surface, pace and room instead of per-step sync. edit.md: build a natural bed from many copies of one short unit with `sequence`. Test in `GroupBed`. Because: Murch, *Suddenly Something Clicked* (2025, ch. 21); book rules, unverified by listening.
