@@ -28,7 +28,7 @@ A lone effect with nothing around it (one car in an otherwise silent street) rea
 
 ## Footsteps
 
-The brief needs character, weight shift, shoe and exact surface. For the player on a budget project, plan 6 to 8 takes per surface; NPCs can share a set per group (book rule, unverified). Plan single hits per surface, then a sequence. Mix footfall kinds in one walk (some heel-toe, some flat, a scuff, a weight shift): all flat or all heel-toe sounds performed. A prop pickup may be heard where life is silent, but keep the scrape short.
+The brief needs character, weight shift, shoe and exact surface. For the player on a budget project, plan 6 to 8 takes per surface; NPCs can share a set per group (book rule, unverified). Plan single hits per surface, then a sequence. Mix footfall kinds in one walk (some heel-toe, some flat, a scuff, a weight shift): all flat or all heel-toe sounds performed. One or two walkers on screen get per-step sync; three or more get one group footstep bed matched to surface, pace and room, with only a lead step synced where it draws the eye (Murch, *Suddenly Something Clicked*, ch. 21; book rule, unverified). A prop pickup may be heard where life is silent, but keep the scrape short.
 
 ## Foley and cloth
 

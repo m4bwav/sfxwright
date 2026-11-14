@@ -155,7 +155,9 @@ Aikin (2004, music book, untested here): random detune beats identical repeats b
 
 ## Footsteps
 
-`sequence` places single hits with uneven timing, no repeat in a row, and a slight limp. `--breaks` restarts timing at cuts. Then `timing` should not flag it.
+`sequence` places single hits with uneven timing, no repeat in a row, and a slight limp. `--breaks` restarts timing at cuts. Then `timing` should not flag it. `--walkers 3` or more lays extra walkers over the first, each with its own start, pace and seed draw, 3 dB down, for a group bed.
+
+A natural bed (crickets, rain on leaves, birds) can be built from many copies of one short unit, for control a field take does not give: `sequence unit.wav --count 40 --gap 0.3 --jitter 0.5 --walkers 4`, then `loop`. Vary the unit with a variation set first so copies do not repeat (Murch, ch. 21; unverified by listening).
 
 ## Loops
 

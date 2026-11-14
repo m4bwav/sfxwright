@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.25, 2026-11-13
+
+`sequence --walkers N` overlays N walkers with their own phase and pace for a group footstep bed; default 1 is unchanged. plan.md Footsteps: three or more walkers get one group bed matched to surface, pace and room instead of per-step sync. edit.md: build a natural bed from many copies of one short unit with `sequence`. Test in `GroupBed`. Because: Murch, *Suddenly Something Clicked* (2025, ch. 21); book rules, unverified by listening.
+
 ## 0.1.24, 2026-11-13
 
 `check --mono` reads the loss when channels are summed and flags MONO_LOSS above 3 dB; it runs by itself for `spatial: 3D` list sounds, which also get STEREO_3D when the file is stereo. `layer` warns ONSETS_COINCIDE when two layers' first onsets fall within 3 ms (skipped for the `offset` bed recipe). plan.md gains the job-first gate, 3D sounds ship mono, a repeated-trigger test before handover and 6 to 8 footstep takes per surface; edit.md gains layer staging and a note on tail spread in a set. Tests in `MonoFold` and `LayerOnsets`. Because: Zdanowicz and Bambrick, *The Game Audio Strategy Guide* (ch. 3, 8); measurements in thresholds.md.
