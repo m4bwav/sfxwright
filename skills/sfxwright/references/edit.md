@@ -12,6 +12,8 @@ A harsh sound can hide slow material: pitch train or lorry brakes down three or 
 
 Past a limited range, artifacts are the effect, not a bug to tune out. Pitch shift and frequency shift differ.
 
+For a pitch change that keeps length, or a pitch path along a file, use Rubber Band (`rubberband -3`, R3 engine) rather than varispeed: `--formant` keeps a body or voice in place and `--pitchmap`/`--timemap` bend pitch and timing over time (a rising whine, a creak that sags). Keep musical shifts within 3-4 semitones; past that the artifacts are the sound. Audacity is for auditioning, not scripting (its pipe needs the GUI open).
+
 ## Unpleasant or wearing
 
 From Cowan, *The Effects of Sound on People* (2016, sec. 5.2). Its data is mostly transport noise and lab tests, so these are untested on generated audio.
