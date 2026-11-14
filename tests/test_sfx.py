@@ -490,5 +490,18 @@ class LayerOnsets(Base):
         self.assertNotIn("warnings", r)
 
 
+class GroupBed(Base):
+    def test_walkers_overlay_and_single_unchanged(self):
+        f = self.hit()
+        code, one = run("sequence", f, "--out", self.d / "one.wav", "--count", "6", "--seed", "3")
+        code, again = run("sequence", f, "--out", self.d / "again.wav", "--count", "6", "--seed", "3", "--walkers", "1")
+        self.assertEqual(one["events"], again["events"])
+        code, grp = run("sequence", f, "--out", self.d / "grp.wav", "--count", "6", "--seed", "3", "--walkers", "4")
+        self.assertEqual(len(grp["events"]), 24)
+        self.assertEqual(grp["events"], sorted(grp["events"]))
+        gaps = [b - a for a, b in zip(grp["events"], grp["events"][1:])]
+        self.assertLess(min(gaps), 0.2)
+
+
 if __name__ == "__main__":
     unittest.main()

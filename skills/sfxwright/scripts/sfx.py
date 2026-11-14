@@ -50,7 +50,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import sfx_audio as A  # noqa: E402
 import sfx_synth as S  # noqa: E402
 
-VERSION = "0.1.24"
+VERSION = "0.1.25"
 SCHEMA = 1
 KINDS = ("one-shot", "loop", "ambience", "sequence", "stinger", "ui")
 STATUSES = ("planned", "rendered", "picked", "finished", "rejected")
@@ -902,21 +902,30 @@ def cmd_sequence(a):
     rng = random.Random(a.seed)
     hits = [A.read_audio(f) for f in a.files]
     sr = hits[0].sr
-    t = 0.0
     placed = []
-    breaks = [float(x) for x in (a.breaks or "").split(",") if x]
-    last = -1
-    for i in range(a.count):
-        pool = [j for j in range(len(hits)) if j != last] or [0]
-        j = rng.choice(pool)
-        last = j
-        placed.append((t, j, A.undb(rng.uniform(-a.gain, a.gain))))
-        gap = a.gap * (1 + rng.uniform(-a.jitter, a.jitter))
-        if i % 2 == 1:
-            gap *= a.limp
-        t += gap
-        while breaks and t >= breaks[0]:
-            t = breaks.pop(0) + a.gap
+    end = 0.0
+    walkers = max(1, getattr(a, "walkers", 1))
+    for w in range(walkers):
+        # extra walkers: own start phase and pace, quieter, so the steps blur into a group bed
+        t = rng.uniform(0, a.gap) if w else 0.0
+        pace = a.gap * (rng.uniform(0.9, 1.1) if w else 1.0)
+        trim = A.undb(-3.0) if walkers > 1 else 1.0
+        breaks = [float(x) for x in (a.breaks or "").split(",") if x]
+        last = -1
+        for i in range(a.count):
+            pool = [j for j in range(len(hits)) if j != last] or [0]
+            j = rng.choice(pool)
+            last = j
+            placed.append((t, j, trim * A.undb(rng.uniform(-a.gain, a.gain))))
+            gap = pace * (1 + rng.uniform(-a.jitter, a.jitter))
+            if i % 2 == 1:
+                gap *= a.limp
+            t += gap
+            while breaks and t >= breaks[0]:
+                t = breaks.pop(0) + a.gap
+        end = max(end, t)
+    placed.sort()
+    t = end
     n = int((t + max(h.seconds for h in hits)) * sr)
     x = [0.0] * n
     for at, j, k in placed:
@@ -928,7 +937,7 @@ def cmd_sequence(a):
     if top > 0.89:
         x = [v * 0.89 / top for v in x]
     A.write_wav(a.out, A.Audio(sr, [x]))
-    derive(a.out, a.files, {"op": "sequence", "count": a.count, "gap_s": a.gap, "jitter": a.jitter, "seed": a.seed, "date": today()})
+    derive(a.out, a.files, {"op": "sequence", "count": a.count, "walkers": a.walkers, "gap_s": a.gap, "jitter": a.jitter, "seed": a.seed, "date": today()})
     return {"ok": True, "out": a.out, "events": [round(p[0], 3) for p in placed], "seconds": round(n / sr, 2)}
 
 
@@ -1490,6 +1499,7 @@ def build_parser():
     c.add_argument("--limp", type=float, default=1.03, help="every second gap is this much longer: feet differ")
     c.add_argument("--gain", type=float, default=2.0)
     c.add_argument("--breaks", help="comma-separated cut times; timing restarts after each")
+    c.add_argument("--walkers", type=int, default=1, help="3+ = group bed: each walker gets its own phase and pace")
     c.add_argument("--seed", type=int, default=1)
     ov(c)
     c = add("loop", cmd_loop)
