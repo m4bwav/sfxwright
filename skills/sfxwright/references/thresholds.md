@@ -72,3 +72,4 @@ Real tone always trips the checks written for one-shots: the takes flagged CUT_T
 - Crackle, chips and foley contain clicks on purpose: use `--waive CLICK`.
 - DC can flag short, low-heavy sounds whose mean is not truly offset.
 - Onset counts are estimates.
+- A tuned hit needs about 30 ms of body to carry pitch; under about 10 ms it reads as a click whatever its timbre. Book rule (Loy, *Musimathics* vol. 1, sec. 6.10), no check behind it.
