@@ -50,7 +50,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import sfx_audio as A  # noqa: E402
 import sfx_synth as S  # noqa: E402
 
-VERSION = "0.1.28"
+VERSION = "0.1.29"
 SCHEMA = 1
 KINDS = ("one-shot", "loop", "ambience", "sequence", "stinger", "ui")
 STATUSES = ("planned", "rendered", "picked", "finished", "rejected")
@@ -763,6 +763,35 @@ def compress(au, thresh_db=-6.0, ratio=6.0, attack_ms=5.0, release_ms=120.0):
     return A.Audio(au.sr, [[s * g for s, g in zip(c, gains)] for c in au.channels])
 
 
+def _rms(chs):
+    n = sum(len(c) for c in chs)
+    return math.sqrt(sum(v * v for c in chs for v in c) / n) if n else 0.0
+
+
+def convolve(inp, ir, outp, mix, wet_db=0.0):
+    """Convolve with an IR, level-matched: the wet signal is scaled to the dry RMS (plus wet_db), then mixed.
+    ffmpeg afir's default irnorm=1 rescales the IR and left the wet path about 43 dB down, so the IR goes in raw
+    (irnorm=-1, gtype=none) and the level is set here."""
+    import tempfile
+    dry = A.read_audio(inp)
+    with tempfile.TemporaryDirectory() as td:
+        tmp = Path(td) / "wet.wav"
+        A.run_ffmpeg(["-i", str(inp), "-i", str(ir), "-filter_complex", "[0:a][1:a]afir=dry=1:wet=1:irnorm=-1:gtype=none", "-c:a", "pcm_f32le", str(tmp)])
+        wet = A.read_audio(tmp)
+    n = max(dry.n, wet.n)
+    nch = max(len(dry.channels), len(wet.channels))
+    d = [list(dry.channels[i % len(dry.channels)]) + [0.0] * (n - dry.n) for i in range(nch)]
+    w = [list(wet.channels[i % len(wet.channels)]) + [0.0] * (n - wet.n) for i in range(nch)]
+    rd, rw = _rms(d), _rms(w)
+    k = (rd / rw) * A.undb(wet_db) if rw > 1e-12 else 0.0
+    out = [[(1 - mix) * x + mix * k * y for x, y in zip(dc, wc)] for dc, wc in zip(d, w)]
+    pk = max((abs(v) for c in out for v in c), default=0.0)
+    if pk > 0.999:
+        g = A.undb(-1.0) / pk
+        out = [[v * g for v in c] for c in out]
+    A.write_wav(outp, A.Audio(dry.sr, out))
+
+
 def cmd_edit(a):
     guard_edit([a.input], a.override_licence)
     outp = Path(a.out)
@@ -785,8 +814,9 @@ def cmd_edit(a):
             if not a.ir:
                 raise Fail("convolve needs --ir, an impulse response whose licence you know")
             mix = a.value if a.value is not None else 0.3
-            A.run_ffmpeg(["-i", a.input, "-i", a.ir, "-filter_complex", "[0:a]asplit[d][w];[w][1:a]afir[f];[d]volume=%g[dd];[f]volume=%g[ff];[dd][ff]amix=inputs=2:normalize=0:duration=longest" % (1 - mix, mix), "-c:a", "pcm_s24le", str(outp)])
+            convolve(a.input, a.ir, outp, mix, a.wet_db)
             step["ir"] = Path(a.ir).name
+            step["wet_db"] = a.wet_db
         warn = "stretch on an impact smears the attack; prefer pitch (varispeed)" if a.op == "stretch" else None
     else:
         au = A.read_audio(a.input)
@@ -1492,6 +1522,7 @@ def build_parser():
     c.add_argument("--fade-in", type=float, default=2.0, dest="fade_in")
     c.add_argument("--fade-out", type=float, default=20.0, dest="fade_out")
     c.add_argument("--ir")
+    c.add_argument("--wet-db", type=float, default=0.0, dest="wet_db", help="convolve: wet level in dB against the dry RMS before the --value mix (default 0 = matched)")
     ov(c)
     c = add("layer", cmd_layer)
     c.add_argument("files", nargs="+")

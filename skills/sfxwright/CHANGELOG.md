@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.29, 2026-11-18
+
+Fix: `edit --op convolve` came out about 43 dB too quiet with a `synth ir` impulse (dry pluck RMS -24 dB, wet at `--value 1` RMS -65 dB). Cause: ffmpeg afir's default `irnorm=1` rescales the IR. The IR now goes in raw (`irnorm=-1`, `gtype=none`) and the wet path is scaled to the dry RMS before the `--value` mix; new `--wet-db` (default 0) sets the wet level against the dry. A mix that would clip is pulled to -1 dBFS. After: wet RMS -24 dB at `--value 1`. Test `test_convolve_wet_level_matches_dry`. Because: bug report from a musicwright session (its `mw.py reverb` had the level right).
+
 ## 0.1.28, 2026-11-18
 
 `synth ir`: a reverb impulse made from seeded noise under a power-law decay, through a one-pole low-pass whose cutoff falls from `bright` to `dark` over the tail, for `edit --op convolve` with no licence question. `edit --op compress` (`--value` threshold dB, default -6; `--ratio`, default 6): a peak-follower bus compressor with no make-up gain. finish.md: in WebAudio, set an AudioParam only on a change over 1%. Tests in `ReverbAndCompress`. Because: ideas from vitaminclaude/voidstruck (PolyForm Strict; ideas only, written fresh, no code copied); unverified by listening.

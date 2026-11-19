@@ -46,3 +46,7 @@ README "Works with" section and a wiki Works-With page now say what crosses each
 ## 2026-11-18 wiki to 0.1.28
 
 Wiki updated from 0.1.8 to 0.1.28 with wikiwright: Commands (synth ir, edit --op compress, sequence --walkers, check --mono, --tone-match), Routes-and-Synth-Recipes (bubbles, rain, motor, cricket, pluck, ir; modal strike/velocity; whoosh passby), Versions-and-Upgrading, Home, footer. Every `$ ` line replayed by `_verify/wiki-verify.py` (SFX_REPO env added): 160 commands, 0 differ. Also fixed CRLF in _Sidebar and Home and a repeated title on Works-With. Not judged by ear; Linux/macOS transcripts not run.
+
+## 2026-11-18 convolve level fix (0.1.29)
+
+`edit --op convolve` with a `synth ir` impulse was ~43 dB under the dry (pluck RMS -24 dB, wet -65 dB). ffmpeg afir's default `irnorm=1` rescales the IR (`gtype` made no difference). Now afir runs with `irnorm=-1:gtype=none` into a float temp file and Python scales the wet to the dry RMS, plus `--wet-db`, then mixes by `--value`; peaks over 0 dBFS are pulled to -1 dBFS. Regression test `test_convolve_wet_level_matches_dry` (within 4 dB).
