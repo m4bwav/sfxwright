@@ -5,7 +5,7 @@
 | Bigger, heavier | `edit --op pitch --value -5` (varispeed) | Longer; extreme shifts expose a model's band limit |
 | Same pitch, other length | `edit --op stretch` (ffmpeg atempo) | Smears attacks: fine for beds, poor for hits |
 | Sweep or riser | `reverse`, then pitch or fade | |
-| A space on a dry sound | `edit --op convolve --ir room.wav --value 0.3` | Know the impulse's licence |
+| A space on a dry sound | `edit --op convolve --ir room.wav --value 0.3` (wet/dry mix; the wet is matched to the dry RMS, `--wet-db -6` to sit it lower) | Know the impulse's licence |
 | A space with no licence question | `synth ir --out room.wav --param seconds=1.2`, then convolve with it | Synthetic: noise under a power-law decay (`decay`, default 2.2), cutoff falling from `bright` to `dark` |
 | Tame peaks on a mix or bed | `edit --op compress --value -6 --ratio 6` | Squeezes everything over the threshold; not for one-shots, which `finish` only levels |
 | Clean ends | `edit --op tidy` | Removes DC, trims, fades to zero |

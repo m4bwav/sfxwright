@@ -555,6 +555,21 @@ class ReverbAndCompress(Base):
         self.assertLess(max(abs(v) for v in out[22050:44100]), 0.7)
         self.assertAlmostEqual(max(abs(v) for v in out[-22050:]), 0.1, delta=0.005)
 
+    @unittest.skipUnless(A.ffmpeg(), "needs ffmpeg")
+    def test_convolve_wet_level_matches_dry(self):
+        f = self.d / "dry.wav"
+        ir = self.d / "ir.wav"
+        self.assertEqual(run("synth", "pluck", "--out", f)[0], 0)
+        self.assertEqual(run("synth", "ir", "--out", ir)[0], 0)
+        db = lambda p: 20 * math.log10(sfx._rms(A.read_audio(p).channels))
+        dry = db(f)
+        for mix, wet_db, want in ((1.0, 0.0, 0.0), (0.3, 0.0, 0.0), (1.0, -6.0, -6.0)):
+            o = self.d / ("w%g_%g.wav" % (mix, wet_db))
+            code, res = run("edit", f, o, "--op", "convolve", "--ir", ir, "--value", mix, "--wet-db", wet_db)
+            self.assertEqual(code, 0, res)
+            # Wet runs longer than dry, so its RMS over the whole file sits a little under; 43 dB down was the bug.
+            self.assertAlmostEqual(db(o) - dry, want, delta=4.0, msg="mix %g wet %g" % (mix, wet_db))
+
     def test_compress_cli(self):
         f = self.hit()
         o = self.d / "c.wav"
