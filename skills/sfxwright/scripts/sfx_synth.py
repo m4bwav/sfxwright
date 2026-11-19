@@ -561,9 +561,22 @@ def pluck(sr, rng, hz=220.0, t60=0.8):
     return _finish(out, sr, attack_ms=2.0)
 
 
+def ir(sr, rng, seconds=1.2, decay=2.2, bright=9000.0, dark=600.0):
+    """Reverb impulse response for `edit --op convolve --ir`: seeded noise under a power-law decay, through a one-pole low-pass whose cutoff falls from bright to dark over the tail."""
+    n = max(2, int(seconds * sr))
+    y, out = 0.0, []
+    for i in range(n):
+        f = i / n
+        hz = bright * (dark / bright) ** f  # exponential fall: the air eats highs first
+        a = 1 - math.exp(-2 * math.pi * min(hz, sr * 0.45) / sr)
+        y += a * (rng.uniform(-1, 1) - y)
+        out.append(y * (1 - f) ** decay)
+    return _finish(out, sr, peak=0.7, fade_ms=4.0, attack_ms=0.2)
+
+
 RECIPES = {"shaker": shaker, "modal": modal, "footstep": footstep, "click": click, "switch": switch, "beep": beep, "wind": wind,
            "fire": fire, "explosion": explosion, "whoosh": whoosh, "creak": creak, "retro": retro,
-           "bubbles": bubbles, "rain": rain, "motor": motor, "cricket": cricket, "pluck": pluck}
+           "bubbles": bubbles, "rain": rain, "motor": motor, "cricket": cricket, "pluck": pluck, "ir": ir}
 
 
 def describe():

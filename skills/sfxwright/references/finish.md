@@ -27,6 +27,7 @@ Loudness specs measure whole mixes: EBU R128 -23 LUFS, -1 dBTP; ATSC A/85 -24 LK
 - **Roblox:** mp3, ogg, wav, flac; under 20 MB and 7 minutes; up to 48 kHz; import limits and moderation apply; you must hold the rights.
 - **Unreal:** MetaSounds has procedural footstep templates.
 - **FMOD:** multi instruments with shuffle, scatterer, modulators on pitch and volume.
+- **WebAudio (browser games):** keep the last target set on each AudioParam and call `setTargetAtTime` only when the new value differs by more than 1%. Per-frame calls with the same value pile up automation events and cost CPU for no change.
 - **Wwise:** random containers with avoid-repeat, per-trigger randomizers.
 
 `doc --kind impl` writes the sheet. `budget` estimates size and finds removable silence and fake stereo.

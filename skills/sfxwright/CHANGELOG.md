@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.28, 2026-11-18
+
+`synth ir`: a reverb impulse made from seeded noise under a power-law decay, through a one-pole low-pass whose cutoff falls from `bright` to `dark` over the tail, for `edit --op convolve` with no licence question. `edit --op compress` (`--value` threshold dB, default -6; `--ratio`, default 6): a peak-follower bus compressor with no make-up gain. finish.md: in WebAudio, set an AudioParam only on a change over 1%. Tests in `ReverbAndCompress`. Because: ideas from vitaminclaude/voidstruck (PolyForm Strict; ideas only, written fresh, no code copied); unverified by listening.
+
 ## 0.1.27, 2026-11-18
 
 edit.md: pitched SFX and chimes take their notes from a pentatonic of the music's current key, cross-linked to musicwright-game. Because: idea from robinduckett/boo-mas (no licence; our own words, no code copied).
