@@ -1,6 +1,7 @@
 # sfxwright handoff
 
 State 2026-11-07, end of session 9. Public repo, v0.1.10, wiki at 0.1.8 (0.1.9 and 0.1.10 change references only).
+Wiki at 0.1.28 since 2026-11-18 (synth ir, edit --op compress, new recipes, sequence --walkers, check --mono; 160 transcript commands replay clean). wiki-verify.py now takes SFX_REPO to point at a worktree.
 
 ## Waiting on Mark
 - Optional: books still missing, `books/sfx-wanted-books.md`.

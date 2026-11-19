@@ -42,3 +42,7 @@ Mark recorded the room tone. `check --tone-match` on the two takes, fills and pl
 ## 2026-11-11, works-with docs
 
 README "Works with" section and a wiki Works-With page now say what crosses each way between sfxwright and its partner plugins, and why the pair helps. Taken from the partner mentions in each plugin's skills.
+
+## 2026-11-18 wiki to 0.1.28
+
+Wiki updated from 0.1.8 to 0.1.28 with wikiwright: Commands (synth ir, edit --op compress, sequence --walkers, check --mono, --tone-match), Routes-and-Synth-Recipes (bubbles, rain, motor, cricket, pluck, ir; modal strike/velocity; whoosh passby), Versions-and-Upgrading, Home, footer. Every `$ ` line replayed by `_verify/wiki-verify.py` (SFX_REPO env added): 160 commands, 0 differ. Also fixed CRLF in _Sidebar and Home and a repeated title on Works-With. Not judged by ear; Linux/macOS transcripts not run.
