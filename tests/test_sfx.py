@@ -534,3 +534,30 @@ class GroupBed(Base):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class ReverbAndCompress(Base):
+    def test_ir_decays_and_darkens(self):
+        x = Y.render("ir", seed=2, seconds=1.0)
+        self.assertEqual(x, Y.render("ir", seed=2, seconds=1.0))
+        q = len(x) // 4
+        head, tail = x[:q], x[2 * q:3 * q]
+        e = lambda v: sum(s * s for s in v) / len(v)
+        self.assertGreater(e(head), 20 * e(tail))
+        # Share of energy above 2 kHz falls along the tail.
+        hi = lambda v: e(Y._hp(v, 2000, 44100)) / e(v)
+        self.assertGreater(hi(head), 1.5 * hi(x[3 * q:]))
+
+    def test_compress_cuts_peaks_keeps_quiet(self):
+        loud = [0.9 * math.sin(i / 10) for i in range(44100)]
+        quiet = [0.1 * math.sin(i / 10) for i in range(44100)]
+        out = sfx.compress(A.Audio(44100, [loud + quiet]), -6.0, 6.0).channels[0]
+        self.assertLess(max(abs(v) for v in out[22050:44100]), 0.7)
+        self.assertAlmostEqual(max(abs(v) for v in out[-22050:]), 0.1, delta=0.005)
+
+    def test_compress_cli(self):
+        f = self.hit()
+        o = self.d / "c.wav"
+        code, res = run("edit", f, o, "--op", "compress", "--value", "-12", "--ratio", "4")
+        self.assertEqual(code, 0, res)
+        self.assertEqual(run("edit", f, o, "--op", "compress", "--ratio", "0.5")[0], 1)

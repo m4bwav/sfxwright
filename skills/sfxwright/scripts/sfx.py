@@ -50,7 +50,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import sfx_audio as A  # noqa: E402
 import sfx_synth as S  # noqa: E402
 
-VERSION = "0.1.27"
+VERSION = "0.1.28"
 SCHEMA = 1
 KINDS = ("one-shot", "loop", "ambience", "sequence", "stinger", "ui")
 STATUSES = ("planned", "rendered", "picked", "finished", "rejected")
@@ -749,6 +749,20 @@ def tidy(au, head_db=-50.0, tail_db=-60.0, keep_ms=2.0, out_ms=10.0):
     return A.Audio(au.sr, out)
 
 
+def compress(au, thresh_db=-6.0, ratio=6.0, attack_ms=5.0, release_ms=120.0):
+    """Master bus compressor: a peak follower across all channels, gain cut above the threshold by the ratio. No make-up gain."""
+    ka = math.exp(-1000.0 / (attack_ms * au.sr))
+    kr = math.exp(-1000.0 / (release_ms * au.sr))
+    env, gains = 0.0, []
+    for i in range(au.n):
+        v = max(abs(c[i]) for c in au.channels)
+        k = ka if v > env else kr
+        env = k * env + (1 - k) * v
+        over = 20 * math.log10(env) - thresh_db if env > 1e-9 else -1.0
+        gains.append(A.undb(-over * (1 - 1 / ratio)) if over > 0 else 1.0)
+    return A.Audio(au.sr, [[s * g for s, g in zip(c, gains)] for c in au.channels])
+
+
 def cmd_edit(a):
     guard_edit([a.input], a.override_licence)
     outp = Path(a.out)
@@ -791,6 +805,11 @@ def cmd_edit(a):
             top = max(max(abs(s) for s in c) for c in au.channels) or 1.0
             k = A.undb(a.value if a.value is not None else -3.0) / top
             au = A.Audio(au.sr, [[s * k for s in c] for c in au.channels])
+        elif a.op == "compress":
+            if a.ratio < 1:
+                raise Fail("--ratio is 1 or more")
+            au = compress(au, a.value if a.value is not None else -6.0, a.ratio)
+            step["ratio"] = a.ratio
         elif a.op == "reverse":
             au = A.Audio(au.sr, [c[::-1] for c in au.channels])
         elif a.op == "dc":
@@ -1465,7 +1484,8 @@ def build_parser():
     c = add("edit", cmd_edit)
     c.add_argument("input")
     c.add_argument("out")
-    c.add_argument("--op", required=True, choices=("tidy", "trim", "fade", "gain", "peak", "pitch", "stretch", "reverse", "convolve", "dc"))
+    c.add_argument("--op", required=True, choices=("tidy", "trim", "fade", "gain", "peak", "pitch", "stretch", "reverse", "convolve", "dc", "compress"))
+    c.add_argument("--ratio", type=float, default=6.0, help="compress: ratio above --value dB (default -6)")
     c.add_argument("--value", type=float)
     c.add_argument("--start", type=float)
     c.add_argument("--end", type=float)
