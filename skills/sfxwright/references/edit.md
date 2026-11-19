@@ -48,6 +48,7 @@ From a synthesis textbook (Shepard, *Refining Sound*, 2013). It is about music, 
 - **Thicker, same pitch:** detuned copies in even pairs around a centre, such as plus and minus 3 and 7 cents.
 - **Curves:** straight fades sound mechanical. Put most of the change early in a rise or a fall.
 - **Event blip:** a very fast pitch rise and fall on one layer.
+- **In key with the music:** when the game knows the music's current key, take pitched SFX and chime notes from a pentatonic of that key, so they fit whatever chord plays (musicwright-game, adaptive.md "Live code sequencer").
 - **Shift:** pitch shift keeps partials' relation; frequency shift moves all by the same hertz and breaks it, for a less natural sound.
 - **Intensity:** a harder hit is more than louder: shorter attack and decay, longer tail. `vary` changes pitch and gain only, so make hard and soft takes apart.
 - **Distance:** longer reverb pre-delay reads closer, shorter reads farther.
