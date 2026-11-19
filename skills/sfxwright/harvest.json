@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "targets": [
+    {
+      "kind": "github",
+      "query": "comfyui audio",
+      "keep": "top 10 by stars; new entries and their owners' repos become harvest targets"
+    },
+    {
+      "kind": "github",
+      "url": "https://github.com/christian-byrne/audio-separation-nodes-comfyui",
+      "keep": "comfyui-top10 harvest seed M3; new nodes, releases and the owner's (christian-byrne) other repos"
+    }
+  ]
+}
