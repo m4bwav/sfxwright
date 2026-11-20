@@ -3,7 +3,7 @@ name: sfxwright
 description: "Plan, make, edit, check and document sound effects for games, film, video and apps, keeping each file's source and licence on disk. A brief, shot list or game event list becomes a sound list; sounds come from procedural recipes with no model, any reachable ComfyUI, hosted APIs or CC0 libraries; variation sets, loops, layers and footstep sequences are built by script; measured checks catch clipping, clicks, DC, cut ends, padding and bad seams; `ship` answers 'can we ship this?'. Use whenever a project needs a sound effect or foley: 'I need a door creak', 'sound list for my game', 'footsteps on gravel', 'add sound to this cut', 'six variations of this hit', 'why does this loop click', 'can I use this Freesound file commercially', 'which AI model for SFX'. Also first for any request to recreate a sound from a named film or a famous trademarked sound. Whole music cues and songs are musicwright; voices are voicewright. Also 'refresh sfxwright'."
 license: MIT
 metadata:
-  version: 0.2.0
+  version: 0.2.1
 ---
 
 # sfxwright
@@ -55,6 +55,7 @@ SFX check takes/*.wav --mono           # phase loss when summed; on for 3D sound
 SFX check bed.wav --noise              # a noise buffer repeating
 SFX set takes/step_*.wav --force       # near-duplicates, outliers, level spread; --force: louder must be brighter
 SFX timing walk.wav                    # too even, or one sample repeating
+SFX avsync --video cut.mp4 [--audio mix.wav] --fps 24   # sound against picture: lag_ms, match rate, LATE/EARLY/LOW_MATCH
 SFX sheet takes/*.wav --out sheet.png  # look at the waveforms
 ```
 

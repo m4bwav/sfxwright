@@ -50,3 +50,7 @@ Wiki updated from 0.1.8 to 0.1.28 with wikiwright: Commands (synth ir, edit --op
 ## 2026-11-18 convolve level fix (0.1.29)
 
 `edit --op convolve` with a `synth ir` impulse was ~43 dB under the dry (pluck RMS -24 dB, wet -65 dB). ffmpeg afir's default `irnorm=1` rescales the IR (`gtype` made no difference). Now afir runs with `irnorm=-1:gtype=none` into a float temp file and Python scales the wet to the dry RMS, plus `--wet-db`, then mixes by `--value`; peaks over 0 dBFS are pulled to -1 dBFS. Regression test `test_convolve_wet_level_matches_dry` (within 4 dB).
+
+## 2026-11-20 avsync (0.2.1)
+
+Technique harvest, paper arXiv:2611.05988 (LiveFoley), verdict adopt-partly. Built `sfx.py avsync`: video motion events (64x36 gray frame change via ffmpeg) against audio onsets, median lag, match rate before and after the lag, flags LATE, EARLY, LOW_MATCH, FEW_EVENTS, NO_EVENTS. Tests `AvSync` on a generated flash and click clip (120 ms late reads 109 ms, 5/5 after lag). Real run on two MiniMax H3 clips with generated audio: 1 and 2 event pairs, lags 249 and 150 ms that meant nothing, so FEW_EVENTS was added. Next: calibrate on real V2A takes (HunyuanVideo-Foley, MMAudio) when a video route is tested.

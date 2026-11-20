@@ -666,3 +666,65 @@ class BooksRound6(Base):
         code, res = run("edit", f, o, "--op", "convolve", "--ir", ir, "--value", "1")
         self.assertEqual(code, 0, res)
         self.assertGreater(A.read_audio(o).seconds, A.read_audio(f).seconds + 0.8)
+
+
+@unittest.skipUnless(A.ffmpeg(), "needs ffmpeg")
+class AvSync(Base):
+    """A white box flashes at five uneven times; 900 Hz clicks follow. Method after arXiv:2611.05988."""
+    FLASH = (0.8, 1.6, 2.72, 3.6, 4.88)
+
+    def clicks(self, name, delay):
+        sr = 48000
+        x = [0.0] * (sr * 6)
+        for t in self.FLASH:
+            s = int(round((t + delay) * sr))
+            for i in range(int(0.05 * sr)):
+                x[s + i] = 0.8 * math.sin(2 * math.pi * 900 * i / sr) * math.exp(-i / (0.015 * sr))
+        f = self.d / name
+        A.write_wav(f, A.Audio(sr, [x]))
+        return f
+
+    def clip(self, delay):
+        import subprocess
+        wav = self.clicks("late.wav", delay)
+        on = "+".join("between(t,%.3f,%.3f)" % (t, t + 0.07) for t in self.FLASH)
+        out = self.d / "clip.mkv"
+        subprocess.run([A.ffmpeg(), "-v", "error", "-y", "-f", "lavfi", "-i", "color=black:s=64x36:r=25:d=6", "-i", str(wav),
+                        "-vf", "drawbox=x=0:y=0:w=64:h=36:color=white:t=fill:enable='%s'" % on,
+                        "-c:v", "mpeg4", "-q:v", "2", "-c:a", "pcm_s16le", "-shortest", str(out)], check=True)
+        return out
+
+    def test_late_audio_reads_120_ms(self):
+        v = self.clip(0.12)
+        code, r = run("avsync", "--video", v, "--fps", 25, "--tol", 1)
+        self.assertEqual(code, 0, r)
+        self.assertEqual(r["video_events"], 5, r)
+        self.assertAlmostEqual(r["lag_ms"], 120, delta=40)
+        self.assertEqual(r["matched_after_lag"], 5, r)
+        self.assertEqual(r["matched_at_0"], 0, r)
+        self.assertIn("LATE", r["flags"])
+        self.assertNotIn("LOW_MATCH", r["flags"])
+
+    def test_separate_mix_in_sync(self):
+        v = self.clip(0.12)
+        mix = self.clicks("sync.wav", 0.0)
+        code, r = run("avsync", "--video", v, "--audio", mix)
+        self.assertEqual(code, 0, r)
+        self.assertLessEqual(abs(r["lag_ms"]), 40, r)
+        self.assertEqual(r["matched_at_0"], 5, r)
+        self.assertEqual(r["flags"], [], r)
+
+    def test_early_and_missing_sounds(self):
+        v = self.clip(0.12)
+        early = self.clicks("early.wav", -0.2)
+        _, r = run("avsync", "--video", v, "--audio", early)
+        self.assertIn("EARLY", r["flags"], r)
+        quiet = self.d / "quiet.wav"
+        A.write_wav(quiet, A.Audio(48000, [[0.0] * 48000 * 6]))
+        _, r = run("avsync", "--video", v, "--audio", quiet)
+        self.assertIn("NO_EVENTS", r["flags"], r)
+        self.FLASH = self.FLASH[:2]
+        two = self.clicks("two.wav", 0.12)
+        _, r = run("avsync", "--video", v, "--audio", two)
+        self.assertIn("FEW_EVENTS", r["flags"], r)
+        self.assertNotIn("LATE", r["flags"], r)

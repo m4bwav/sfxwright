@@ -19,6 +19,7 @@ AI sound effects tend to fail in the same ways: a 3 second request returns 1.6 s
 | `sfx.py check` | Clipping, DC, cut ends, clicks, padding, noise floor, length against the brief, loop seam |
 | `sfx.py set` | Are these variations near-duplicates? Is one an outlier? Do levels match? |
 | `sfx.py timing` | Is this sequence too even, or one sample repeating? |
+| `sfx.py avsync` | Does the sound land on the picture? Lag in ms and how many motion events have a sound (needs ffmpeg) |
 | `sfx.py degrade` | Plant a known fault, to prove the checks catch it |
 | `sfx.py ship` | Can this project ship these sounds? BLOCKED, CHECK or CLEAR, with reasons |
 | `sfx.py doc` | Cue sheet, game implementation sheet, or credits and licences |

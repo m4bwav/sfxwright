@@ -7,6 +7,7 @@ Wiki at 0.1.28 since 2026-11-18 (synth ir, edit --op compress, new recipes, sequ
 - Optional: books still missing, `books/sfx-wanted-books.md`.
 
 ## Owed, in order
+0. `avsync` (0.2.1) is uncalibrated: run it on the first real V2A takes and record readings in thresholds.md.
 1. Evergreen refresh due 2026-11-20.
 2. voicewright's worth KEEP may have a contaminated baseline (run folder named the skill; fixed in evergreen 0.18.5). Its session should grep its without-arm transcripts for `voicewright` before rerunning anything.
 
