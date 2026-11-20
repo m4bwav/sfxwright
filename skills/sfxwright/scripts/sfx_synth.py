@@ -41,6 +41,30 @@ def _noise(n, rng):
     return [rng.uniform(-1, 1) for _ in range(n)]
 
 
+def _coloured(n, rng, colour="white"):
+    """White is flat; pink falls 3 dB an octave (even beds, surf, rain wash); brown falls 6 dB (rumble, distant wind) (Boulanger ed., Csound Book ch. 16)."""
+    w = _noise(n, rng)
+    if colour == "white":
+        return w
+    if colour == "pink":  # Kellet's economy filter, within about 0.5 dB of -3 dB/octave above 40 Hz at 44.1 kHz
+        b0 = b1 = b2 = 0.0
+        out = []
+        for v in w:
+            b0 = 0.99765 * b0 + v * 0.0990460
+            b1 = 0.96300 * b1 + v * 0.2965164
+            b2 = 0.57000 * b2 + v * 1.0526913
+            out.append(b0 + b1 + b2 + v * 0.1848)
+    elif colour == "brown":
+        y, out = 0.0, []
+        for v in w:
+            y = 0.998 * y + v * 0.02
+            out.append(y)
+    else:
+        raise ValueError("colour must be white, pink or brown")
+    top = max(abs(v) for v in out) or 1.0
+    return [v / top for v in out]
+
+
 def _mix(n, *parts):
     out = [0.0] * n
     for gain, start, p in parts:
@@ -251,7 +275,7 @@ def beep(sr, rng, hz=800.0, seconds=0.12, second_hz=None):
     return _finish(x, sr, fade_ms=3)
 
 
-def wind(sr, rng, seconds=8.0, strength=0.5, gentle=False):
+def wind(sr, rng, seconds=8.0, strength=0.5, gentle=False, colour="white"):
     """Wind from a slow speed curve, with a background band and two whistles reading that curve at different delays."""
     n = int(seconds * sr)
     g = _lp(_noise(n, rng), 0.5, sr)
@@ -262,7 +286,7 @@ def wind(sr, rng, seconds=8.0, strength=0.5, gentle=False):
         gust = g[i] * 50 * ((base + 0.5) ** 2 - 0.125) * 0.12
         squall = 0.0 if gentle else s[i] * 50 * (8 * (max(base, 0.4) - 0.4)) ** 2 * 0.04
         speed.append(max(0.0, min(1.0, base + gust + squall)))
-    bed = _bp(_noise(n, rng), 800, 0.6, sr)
+    bed = _bp(_coloured(n, rng, colour), 800, 0.6, sr) if colour != "brown" else _lp(_coloured(n, rng, colour), 600, sr)
     bed = [v * (speed[i] + 0.2) for i, v in enumerate(bed)]
     out = [1.0 * v for v in bed]
     for (lo, hi, delay, lev) in ((600, 1000, 0.1, 0.5), (1000, 2000, 1.0, 0.3)):
@@ -468,7 +492,7 @@ def bubbles(sr, rng, seconds=3.0, size=0.5, jitter=0.4, rate=12.0, keep=0.7):
     return _finish(_hp(out, 300, sr), sr, fade_ms=20, attack_ms=1)
 
 
-def rain(sr, rng, seconds=6.0, rate=900.0, surface="hard", bed=0.15):
+def rain(sr, rng, seconds=6.0, rate=900.0, surface="hard", bed=0.15, colour="white"):
     """Rain: Poisson-timed parabolic drop clicks (short ones higher), high-passed, over a quiet noise bed; surface=hard|water|mixed (after Farnell ch. 38)."""
     if surface not in ("hard", "water", "mixed"):
         raise ValueError("rain surface must be hard, water or mixed")
@@ -490,7 +514,7 @@ def rain(sr, rng, seconds=6.0, rate=900.0, surface="hard", bed=0.15):
             _chirp(sr, rng, rng.uniform(0.05, 0.3), out, start)
         t += rng.expovariate(rate)
     drops = _hp(out, 900, sr)
-    noise = _lp(_noise(n, rng), 2500, sr)
+    noise = _lp(_coloured(n, rng, colour), 2500, sr)
     return _finish(_mix(n, (1.0, 0, drops), (bed, 0, noise)), sr, fade_ms=200, attack_ms=200)
 
 
@@ -561,6 +585,28 @@ def pluck(sr, rng, hz=220.0, t60=0.8):
     return _finish(out, sr, attack_ms=2.0)
 
 
+def granular(sr, rng, seconds=4.0, grain_ms=25.0, density=80.0, hz=1800.0, spread=0.6, q=4.0, colour="white"):
+    """Texture bed from short noise grains with Gaussian envelopes at random times and pitches: grains of 5-60 ms stay anonymous, longer ones turn into gestures (Boulanger ed., Csound Book ch. 11)."""
+    if not 5.0 <= grain_ms <= 60.0:
+        raise ValueError("grain_ms must be 5 to 60; longer grains stop reading as texture")
+    n = int(seconds * sr)
+    g = max(8, int(grain_ms * sr / 1000))
+    src = _coloured(n + g, rng, colour)
+    out = [0.0] * (n + g)
+    sigma = g / 6.0
+    env = [math.exp(-0.5 * ((i - g / 2) / sigma) ** 2) for i in range(g)]
+    t = rng.expovariate(density)
+    while t < seconds:
+        start = int(t * sr)
+        f = hz * 2 ** rng.uniform(-spread, spread)
+        grain = _bp(src[start:start + g], f, q, sr)
+        a = rng.uniform(0.4, 1.0)
+        for i in range(len(grain)):
+            out[start + i] += a * env[i] * grain[i]
+        t += rng.expovariate(density)
+    return _finish(out[:n], sr, fade_ms=150, attack_ms=150)
+
+
 def ir(sr, rng, seconds=1.2, decay=2.2, bright=9000.0, dark=600.0):
     """Reverb impulse response for `edit --op convolve --ir`: seeded noise under a power-law decay, through a one-pole low-pass whose cutoff falls from bright to dark over the tail."""
     n = max(2, int(seconds * sr))
@@ -576,7 +622,7 @@ def ir(sr, rng, seconds=1.2, decay=2.2, bright=9000.0, dark=600.0):
 
 RECIPES = {"shaker": shaker, "modal": modal, "footstep": footstep, "click": click, "switch": switch, "beep": beep, "wind": wind,
            "fire": fire, "explosion": explosion, "whoosh": whoosh, "creak": creak, "retro": retro,
-           "bubbles": bubbles, "rain": rain, "motor": motor, "cricket": cricket, "pluck": pluck, "ir": ir}
+           "bubbles": bubbles, "rain": rain, "motor": motor, "cricket": cricket, "pluck": pluck, "ir": ir, "granular": granular}
 
 
 def describe():

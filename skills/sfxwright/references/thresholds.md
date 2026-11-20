@@ -19,7 +19,14 @@ Limits live in `LIMITS` in `sfx_audio.py`. They started as guesses from DSP book
 | NEAR_DUPLICATES | best-lag correlation in a set | above 0.98 |
 | LEVEL_SPREAD | RMS range in a set | above 3 dB |
 | MONO_LOSS | power lost when channels are summed, against their mean | above 3 dB |
+| HAAS_ECHO | delay between the two channels at the best cross-correlation (over 0.5), stereo files | above 30 ms |
+| NOISE_PERIOD | `check --noise`: highest autocorrelation at a lag of 20 ms to 1 s | above 0.3 |
+| FORCE_GAIN_ONLY | `set --force`: louder third at least 3 dB up but its median centroid under 1.05x the softer third's | flag |
 | TOO_EVEN | spread of gaps between onsets | below 0.03 |
+
+## Book checks, uncalibrated, 2026-11-19
+
+HAAS_ECHO: about 1.5-10 ms between channels widens one source; somewhere in 10-40 ms, depending on the sound, it splits into an echo (Boulanger ed., *The Csound Book*, ch. 25). 30 ms sits inside that window. Planted: a 5 ms delay reads 5 ms and stays quiet, 45 ms flags. NOISE_PERIOD: a noise buffer too short for its loop is heard as a cycle (Wilson, *Make: Analog Synthesizers*, ch. 3); planted 0.25 s of noise repeated reads near 1, fresh noise near 0. FORCE_GAIN_ONLY: a force axis whose louder takes are not brighter sounds like one hit at three volumes (Csound Book ch. 6); planted gain-only copies flag, `modal` takes with rising hardness do not. None run on real takes yet; none heard.
 
 ## Mono fold-down, 2026-11-13
 

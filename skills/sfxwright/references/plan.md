@@ -34,6 +34,12 @@ The brief needs character, weight shift, shoe and exact surface. For the player 
 
 One low cloth track following movement; special garments apart. Excess gets cut, so keep it quiet. In a mixed prop layer, metal leads by accident: read each layer's peak.
 
+## Force and distance
+
+- **Louder is brighter:** a force axis must change the spectrum, not only the gain; harder hits have more highs. Check with `set --force` (Boulanger ed., *The Csound Book*, ch. 6).
+- **Distance is the dry-to-reverb ratio:** farther means less direct sound against the same room, not just less gain; room size is the spacing of the early reflections (ch. 23). Width from a channel delay stays under about 10 ms, or it splits into an echo (`check` flags HAAS_ECHO, ch. 25).
+- **Reverb is a mix return, not baked in:** variations stay dry and the game or mix sends them to one shared reverb; bake the room only into a fixed-space one-shot. A reverb per event instance was the CPU spike in Lanham, *Game Audio Development with Unity 5.X*, ch. 11.
+
 ## Ambience
 
 Build from a quiet bed plus sparse events per location, not one long take. Practitioner advice, not a measurement.

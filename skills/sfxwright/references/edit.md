@@ -5,8 +5,9 @@
 | Bigger, heavier | `edit --op pitch --value -5` (varispeed) | Longer; extreme shifts expose a model's band limit |
 | Same pitch, other length | `edit --op stretch` (ffmpeg atempo) | Smears attacks: fine for beds, poor for hits |
 | Sweep or riser | `reverse`, then pitch or fade | |
-| A space on a dry sound | `edit --op convolve --ir room.wav --value 0.3` (wet/dry mix; the wet is matched to the dry RMS, `--wet-db -6` to sit it lower) | Know the impulse's licence |
+| A space on a dry sound | `edit --op convolve --ir room.wav --value 0.3` (wet/dry mix; the wet is matched to the dry RMS, `--wet-db -6` to sit it lower) | Know the impulse's licence. The input is padded by the impulse length so the tail is not cut |
 | A space with no licence question | `synth ir --out room.wav --param seconds=1.2`, then convolve with it | Synthetic: noise under a power-law decay (`decay`, default 2.2), cutoff falling from `bright` to `dark` |
+| Analog warmth, rounder peaks | `edit --op softclip --value 6` (tanh at that drive in dB, peak kept) | Linear when quiet; more drive flattens the envelope (Csound Book ch. 29-30) |
 | Tame peaks on a mix or bed | `edit --op compress --value -6 --ratio 6` | Squeezes everything over the threshold; not for one-shots, which `finish` only levels |
 | Clean ends | `edit --op tidy` | Removes DC, trims, fades to zero |
 
@@ -121,6 +122,7 @@ Russ, *Sound Synthesis and Sampling* (2nd ed., 2008, sec. 4.3.1-4.3.2, 6.2-6.3, 
 - **Small pitch moves on voices and fixed-spectrum hits:** this is why Variation sets keeps them narrow. A big shift turns a voice comic; bells, triangles, tambourines and metal hits just sound wrong.
 - **Familiar plus alien:** keep the recognisable layer and add a short blip of an unexpected timbre at the onset, with no sustain and a short decay. On intensity tiers, let it sound only on the hardest hits, since harder hits have richer spectra.
 - **Fuse check:** raise one layer against the other until the two stop sounding like two sounds. Stop there.
+- **One modulation fuses layers:** two timbres with their own vibrato or tremolo read as two sources; give them one shared modulation and they read as one (Boulanger ed., *The Csound Book*, ch. 18). Modulate the layered file, not each layer apart. A perfectly regular vibrato is itself a synthetic tell: let rate and depth wander a few percent (ch. 7).
 
 ## From plugin DSP
 

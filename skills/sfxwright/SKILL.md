@@ -45,14 +45,15 @@ Prompts name source, material, space and time, not a story. A requested length i
 
 ## Step 5: edit
 
-`SFX edit` (tidy, trim, fade, gain, peak, pitch, stretch, reverse, convolve, dc), `layer`, `vary`, `sequence`, `loop`, `place`, `record-sheet` (plan for sounds with a record route), `tone` (steady quiet stretch, optional fill; compare with `check --tone-match`), `pop` (add or `--verify` head and tail 2 pops on a stem). Recipes and what each edit costs: [references/edit.md](references/edit.md). Pitch is varispeed by default; a stretch smears an impact. Edits carry provenance forward, and a no-derivatives source refuses them. Never copy or rename a sound by hand: the sidecar stays behind. Write to the final name with `edit`, `finish` or `synth --out`.
+`SFX edit` (tidy, trim, fade, gain, peak, pitch, stretch, reverse, convolve, dc, compress, softclip), `layer`, `vary`, `sequence`, `loop`, `place`, `record-sheet` (plan for sounds with a record route), `tone` (steady quiet stretch, optional fill; compare with `check --tone-match`), `pop` (add or `--verify` head and tail 2 pops on a stem). Recipes and what each edit costs: [references/edit.md](references/edit.md). Pitch is varispeed by default; a stretch smears an impact. Edits carry provenance forward, and a no-derivatives source refuses them. Never copy or rename a sound by hand: the sidecar stays behind. Write to the final name with `edit`, `finish` or `synth --out`.
 
 ## Step 6: check every batch
 
 ```
 SFX check takes/*.flac --seconds 2     # readings and flags per file
-SFX check takes/*.wav --mono           # phase loss when summed; on for 3D sounds
-SFX set takes/step_*.wav               # near-duplicates, outliers, level spread
+SFX check takes/*.wav --mono           # phase loss when summed; on for 3D sounds (stereo also flags HAAS_ECHO)
+SFX check bed.wav --noise              # a noise buffer repeating
+SFX set takes/step_*.wav --force       # near-duplicates, outliers, level spread; --force: louder must be brighter
 SFX timing walk.wav                    # too even, or one sample repeating
 SFX sheet takes/*.wav --out sheet.png  # look at the waveforms
 ```

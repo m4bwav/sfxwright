@@ -561,13 +561,14 @@ class ReverbAndCompress(Base):
         ir = self.d / "ir.wav"
         self.assertEqual(run("synth", "pluck", "--out", f)[0], 0)
         self.assertEqual(run("synth", "ir", "--out", ir)[0], 0)
-        db = lambda p: 20 * math.log10(sfx._rms(A.read_audio(p).channels))
+        # Energy, not RMS: since the input is padded so the tail survives, the wet file is a second longer than the dry one.
+        db = lambda p: 10 * math.log10(sfx._rms(A.read_audio(p).channels) ** 2 * A.read_audio(p).n)
         dry = db(f)
         for mix, wet_db, want in ((1.0, 0.0, 0.0), (0.3, 0.0, 0.0), (1.0, -6.0, -6.0)):
             o = self.d / ("w%g_%g.wav" % (mix, wet_db))
             code, res = run("edit", f, o, "--op", "convolve", "--ir", ir, "--value", mix, "--wet-db", wet_db)
             self.assertEqual(code, 0, res)
-            # Wet runs longer than dry, so its RMS over the whole file sits a little under; 43 dB down was the bug.
+            # 43 dB down was the bug.
             self.assertAlmostEqual(db(o) - dry, want, delta=4.0, msg="mix %g wet %g" % (mix, wet_db))
 
     def test_compress_cli(self):
@@ -576,3 +577,92 @@ class ReverbAndCompress(Base):
         code, res = run("edit", f, o, "--op", "compress", "--value", "-12", "--ratio", "4")
         self.assertEqual(code, 0, res)
         self.assertEqual(run("edit", f, o, "--op", "compress", "--ratio", "0.5")[0], 1)
+
+
+class BooksRound6(Base):
+    def test_noise_colours_tilt(self):
+        import random
+        def hi_share(x):
+            e = lambda v: sum(s * s for s in v)
+            return e(Y._hp(x, 4000, 44100)) / e(x)
+        w, p, b = (Y._coloured(44100, random.Random(1), c) for c in ("white", "pink", "brown"))
+        self.assertGreater(hi_share(w), 3 * hi_share(p))
+        self.assertGreater(hi_share(p), 3 * hi_share(b))
+        with self.assertRaises(ValueError):
+            Y._coloured(10, random.Random(1), "green")
+
+    def test_granular_and_colour_params(self):
+        f = self.d / "g.wav"
+        self.assertEqual(run("synth", "granular", "--out", f, "--param", "seconds=1.5")[0], 0)
+        self.assertNotIn("CLIP", self.flags(f))
+        self.assertEqual(run("synth", "granular", "--out", self.d / "x.wav", "--param", "grain_ms=120")[0], 1)
+        self.assertEqual(run("synth", "rain", "--out", self.d / "r.wav", "--param", "seconds=1", "--param", "colour=pink")[0], 0)
+        self.assertEqual(run("synth", "wind", "--out", self.d / "w.wav", "--param", "seconds=2", "--param", "colour=brown")[0], 0)
+
+    def test_haas_echo(self):
+        a = A.read_audio(self.hit())
+        L = a.mono()
+        for ms, want in ((5, False), (45, True)):
+            k = int(ms / 1000 * a.sr)
+            f = self.d / ("d%d.wav" % ms)
+            A.write_wav(f, A.Audio(a.sr, [L + [0.0] * k, [0.0] * k + L]))
+            code, r = run("check", f, "--json")
+            self.assertAlmostEqual(r["files"][0]["readings"]["channel_lag_ms"], ms, delta=1.0)
+            self.assertEqual("HAAS_ECHO" in r["files"][0]["flags"], want, ms)
+        code, r = run("check", self.d / "d45.wav", "--json", "--waive", "HAAS_ECHO")
+        self.assertNotIn("HAAS_ECHO", r["files"][0]["flags"])
+
+    def test_noise_period(self):
+        import random
+        rng = random.Random(4)
+        sr = 44100
+        buf = [rng.uniform(-0.5, 0.5) for _ in range(sr // 4)]
+        fresh = [rng.uniform(-0.5, 0.5) for _ in range(sr * 2)]
+        for name, x, want in (("loop.wav", buf * 8, True), ("fresh.wav", fresh, False)):
+            f = self.d / name
+            A.write_wav(f, A.Audio(sr, [x]))
+            code, r = run("check", f, "--noise", "--json")
+            self.assertEqual("NOISE_PERIOD" in r["files"][0]["flags"], want, (name, r["files"][0]["readings"]["noise_period_corr"]))
+        code, r = run("check", self.d / "loop.wav", "--json")
+        self.assertNotIn("NOISE_PERIOD", r["files"][0]["flags"])
+
+    def test_force_gain_only(self):
+        src = A.read_audio(self.hit())
+        files_gain, files_bright = [], []
+        for i, g in enumerate((0.15, 0.3, 0.6)):
+            f = self.d / ("g%d.wav" % i)
+            A.write_wav(f, A.Audio(src.sr, [[v * g for v in src.channels[0]]]))
+            files_gain.append(f)
+        for i, (g, h) in enumerate(((0.15, 0.2), (0.3, 0.5), (0.6, 0.9))):
+            f = self.d / ("b%d.wav" % i)
+            self.assertEqual(run("synth", "modal", "--out", f, "--param", "material=wood", "--param", "hardness=%g" % h)[0], 0)
+            au = A.read_audio(f)
+            A.write_wav(f, A.Audio(au.sr, [[v * g for v in au.channels[0]]]))
+            files_bright.append(f)
+        _, r = run("set", *files_gain, "--force")
+        self.assertIn("FORCE_GAIN_ONLY", r["flags"], r.get("force"))
+        _, r = run("set", *files_bright, "--force")
+        self.assertNotIn("FORCE_GAIN_ONLY", r["flags"], r.get("force"))
+        _, r = run("set", *files_gain)
+        self.assertNotIn("FORCE_GAIN_ONLY", r["flags"])
+
+    def test_softclip(self):
+        f = self.hit()
+        o = self.d / "s.wav"
+        code, res = run("edit", f, o, "--op", "softclip", "--value", "12")
+        self.assertEqual(code, 0, res)
+        a, b = A.read_audio(f).channels[0], A.read_audio(o).channels[0]
+        self.assertAlmostEqual(max(map(abs, a)), max(map(abs, b)), delta=0.01)
+        crest = lambda x: max(map(abs, x)) / math.sqrt(sum(v * v for v in x) / len(x))
+        self.assertLess(crest(b), crest(a))
+
+    @unittest.skipUnless(A.ffmpeg(), "needs ffmpeg")
+    def test_convolve_keeps_tail(self):
+        f = self.d / "dry.wav"
+        ir = self.d / "ir.wav"
+        run("synth", "click", "--out", f)
+        run("synth", "ir", "--out", ir, "--param", "seconds=1.0")
+        o = self.d / "wet.wav"
+        code, res = run("edit", f, o, "--op", "convolve", "--ir", ir, "--value", "1")
+        self.assertEqual(code, 0, res)
+        self.assertGreater(A.read_audio(o).seconds, A.read_audio(f).seconds + 0.8)
