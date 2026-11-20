@@ -54,3 +54,7 @@ Wiki updated from 0.1.8 to 0.1.28 with wikiwright: Commands (synth ir, edit --op
 ## 2026-11-20 avsync (0.2.1)
 
 Technique harvest, paper arXiv:2611.05988 (LiveFoley), verdict adopt-partly. Built `sfx.py avsync`: video motion events (64x36 gray frame change via ffmpeg) against audio onsets, median lag, match rate before and after the lag, flags LATE, EARLY, LOW_MATCH, FEW_EVENTS, NO_EVENTS. Tests `AvSync` on a generated flash and click clip (120 ms late reads 109 ms, 5/5 after lag). Real run on two MiniMax H3 clips with generated audio: 1 and 2 event pairs, lags 249 and 150 ms that meant nothing, so FEW_EVENTS was added. Next: calibrate on real V2A takes (HunyuanVideo-Foley, MMAudio) when a video route is tested.
+
+## 2026-11-20 scene (0.2.2)
+
+Technique harvest, paper arXiv:2610.34415 (AMBIT), verdict adopt-partly. Built `sfx.py scene`: a JSON plan of mono sources with keys [t, az, el, dist] rendered to stereo with equal-power pan, 1/d gain, an air low-pass and a constant reverb send into an 8-line FDN whose return is a mono tail plus an all-pass side above 1 kHz (L and R matched per band). RT60 per room class from the paper's bands. Tests `Scene` at 16 kHz: fly-by L/R falls steadily outdoors and in the moderate room, a centred 440 Hz tone within 0.4 dB in every room, 4 m 12.04 dB under 1 m. Tones above 1 kHz can sit 1-1.7 dB off centre (interference, LEARNINGS). A 4 s reverberant scene renders in about 1 s at 48 kHz. Not heard yet.

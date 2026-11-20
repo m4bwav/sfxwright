@@ -20,6 +20,7 @@ needed only for `gen`; without it, `gen --workflow-out` writes the workflow to h
   sequence  place single hits into a walk or run with uneven timing
   loop      make a seamless loop and score the seam
   place     lay sounds on a timeline by their sync points and report frame errors
+  scene     move sources through a room by a plan: pan, distance, reverb send (stereo)
   avsync    sound against picture: audio onsets vs video motion, lag and match rate (needs ffmpeg)
   record-sheet  a recording plan for the sounds someone will record
   finish    level and format per destination       name     build or test a file name
@@ -51,7 +52,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import sfx_audio as A  # noqa: E402
 import sfx_synth as S  # noqa: E402
 
-VERSION = "0.2.1"
+VERSION = "0.2.2"
 SCHEMA = 1
 KINDS = ("one-shot", "loop", "ambience", "sequence", "stinger", "ui")
 STATUSES = ("planned", "rendered", "picked", "finished", "rejected")
@@ -1218,6 +1219,197 @@ def cmd_avsync(a):
             "note": "heuristic: camera moves, cuts and beds add false events; about 0.34 s is where viewers notice action lag (arXiv:2611.05988)"}
 
 
+# ---- scene: sources moved through a room by a plan ----
+
+# RT60 per room class: midpoints of the bands in the synthetic-data recipe of AMBIT (arXiv:2610.34415, room table):
+# dry 0.16-0.28 s, moderate 0.38-0.62 s, reverberant 0.78-1.20 s, outdoor no reflections.
+ROOMS = {"dry": 0.22, "moderate": 0.5, "reverberant": 1.0, "outdoor": None}
+FDN_MS = (29.7, 37.1, 41.1, 43.7, 53.3, 59.9, 67.7, 73.1)
+ALLPASS_MS = (4.1, 7.3, 11.9)
+
+
+def _fdn(x, sr, rt60, n):
+    """Mono room tail: an 8-line feedback delay network with a Householder mix; each line's gain sets the same RT60.
+    Python cannot convolve a second-long noise IR at speed, so the tail is built by recursion."""
+    m = [max(1, int(d * sr / 1000)) for d in FDN_MS]
+    g = [10 ** (-3.0 * k / (rt60 * sr)) for k in m]
+    bufs = [[0.0] * k for k in m]
+    pos = [0] * 8
+    lines = list(zip(range(8), m, g, bufs))
+    a = 1 - math.exp(-2 * math.pi * min(6000.0, sr * 0.45) / sr)  # a darker tail than the direct sound
+    y, out, nx = 0.0, [0.0] * n, len(x)
+    for i in range(n):
+        xi = x[i] if i < nx else 0.0
+        v = [b[pos[j]] for j, _, _, b in lines]
+        s = sum(v) * 0.25  # 2/N
+        for j, k, gj, b in lines:
+            p = pos[j]
+            b[p] = gj * (v[j] - s) + xi
+            pos[j] = p + 1 if p + 1 < k else 0
+        y += a * ((v[0] - v[1] + v[2] - v[3] + v[4] - v[5] + v[6] - v[7]) - y)
+        out[i] = y
+    return out
+
+
+def _allpass(x, sr, ms, g=0.6):
+    d = max(1, int(ms * sr / 1000))
+    xb, yb, out = [0.0] * d, [0.0] * d, [0.0] * len(x)
+    for i, v in enumerate(x):
+        p = i % d
+        y = -g * v + xb[p] + g * yb[p]
+        xb[p], yb[p] = v, y
+        out[i] = y
+    return out
+
+
+def _hp1(x, sr, hz):
+    a = 1 - math.exp(-2 * math.pi * hz / sr)
+    lp, out = 0.0, [0.0] * len(x)
+    for i, v in enumerate(x):
+        lp += a * (v - lp)
+        out[i] = v - lp
+    return out
+
+
+def room_tail(send, sr, rt60, n, width=0.7, cross_hz=1000.0):
+    """Stereo reverb return with L and R matched per band. One mono tail M (unit energy per impulse) feeds both sides;
+    a side signal S is M through three all-passes (same magnitude as M at every frequency, other phase), high-passed
+    twice at cross_hz, and L = M + S, R = M - S. Separate noise tails per channel pulled a centred 440 Hz tone 6.5 dB
+    sideways in the harvest prototype; here L and R carry the same energy in every band and share the low band."""
+    imp = _fdn([1.0], sr, rt60, int(rt60 * sr) + int(max(FDN_MS) * sr / 1000))
+    e = sum(v * v for v in imp)
+    k = 1 / math.sqrt(e) if e > 0 else 0.0
+    mid = [v * k for v in _fdn(send, sr, rt60, n)]
+    side = mid
+    for ms in ALLPASS_MS:
+        side = _allpass(side, sr, ms)
+    side = _hp1(_hp1(side, sr, cross_hz), sr, cross_hz)
+    return [m + width * s for m, s in zip(mid, side)], [m - width * s for m, s in zip(mid, side)]
+
+
+def _keys_at(keys, t):
+    if t <= keys[0][0]:
+        return keys[0][1:]
+    for k0, k1 in zip(keys, keys[1:]):
+        if t <= k1[0]:
+            f = (t - k0[0]) / (k1[0] - k0[0]) if k1[0] > k0[0] else 1.0
+            return [u + (w - u) * f for u, w in zip(k0[1:], k1[1:])]
+    return keys[-1][1:]
+
+
+def scene_params(az, el, dist, sr):
+    """Equal-power stereo gains from azimuth and elevation (positive azimuth is left), 1/d past 1 m, and a one-pole
+    air low-pass whose cutoff falls from 20 kHz at 1 m to 6 kHz at 50 m."""
+    p = max(-1.0, min(1.0, -math.sin(math.radians(az)) * math.cos(math.radians(el))))
+    th = (p + 1) * math.pi / 4
+    d = max(1.0, dist)
+    hz = 20000.0 * (6000.0 / 20000.0) ** min(1.0, math.log(d) / math.log(50.0))
+    a = 1 - math.exp(-2 * math.pi * min(hz, sr * 0.45) / sr)
+    return math.cos(th), math.sin(th), 1.0 / d, a
+
+
+def _lr(el, er):
+    if el <= 1e-20 and er <= 1e-20:
+        return None
+    return round(max(-60.0, min(60.0, 10 * math.log10(max(el, 1e-20) / max(er, 1e-20)))), 2)
+
+
+def load_scene(path):
+    try:
+        plan = json.loads(Path(path).read_text(encoding="utf-8"))
+    except (OSError, ValueError) as e:
+        raise Fail("cannot read plan %s: %s" % (path, e))
+    room = plan.setdefault("room", "outdoor")
+    if room not in ROOMS:
+        raise Fail("room must be one of %s" % ", ".join(ROOMS))
+    if not plan.get("sources"):
+        raise Fail("the plan has no sources")
+    if not isinstance(plan.get("duration"), (int, float)) or plan["duration"] <= 0:
+        raise Fail("duration (seconds) must be positive")
+    for i, s in enumerate(plan["sources"]):
+        if not s.get("file"):
+            raise Fail("source %d has no file" % i)
+        keys = s.get("keys") or [[0, 0, 0, 1]]
+        if any(len(k) != 4 for k in keys):
+            raise Fail("source %d: each key is [t, az_deg, el_deg, dist_m]" % i)
+        s["keys"] = sorted([float(v) for v in k] for k in keys)
+    return plan
+
+
+def cmd_scene(a):
+    """Render a scene plan to stereo: per source keyframe interpolation (10 ms steps, ramped per sample), equal-power pan,
+    1/d gain, a distance low-pass and a reverb send that does not fall with distance, so far sources read as far.
+    Idea after AMBIT (arXiv:2610.34415): a structured plan rendered by code; the model itself is not used. Written fresh."""
+    plan = load_scene(a.plan)
+    root = Path(a.plan).resolve().parent
+    files = [str(root / s["file"]) if not Path(s["file"]).is_absolute() else s["file"] for s in plan["sources"]]
+    guard_edit(files, a.override_licence)
+    sr = a.sr
+    rt60 = plan.get("rt60", ROOMS[plan["room"]])
+    dur = float(plan["duration"])
+    nd = int(dur * sr)
+    n = nd + (int(rt60 * sr) if rt60 else 0)
+    B = max(1, sr // 100)
+    L, R, send = [0.0] * n, [0.0] * n, [0.0] * n
+    blk = max(1, sr // 2)
+    nb = (nd + blk - 1) // blk
+    per = []
+    for s, f in zip(plan["sources"], files):
+        au = A.read_audio(f)
+        x = au.mono()
+        if au.sr != sr:
+            x = resample_linear(x, au.sr / sr)
+        on, off = (s.get("active") or [0.0, dur])[:2]
+        i0, i1 = max(0, int(on * sr)), min(nd, int(off * sr))
+        if s.get("loop") and x:
+            x = (x * (1 + (i1 - i0) // len(x)))[:max(0, i1 - i0)]
+        i1 = min(i1, i0 + len(x))
+        eL, eR = [0.0] * nb, [0.0] * nb
+        if i1 > i0:
+            g0 = A.undb(s.get("gain_db", 0.0))
+            gs = A.undb(s.get("send_db", -12.0)) if rt60 else 0.0
+            steps = [scene_params(*_keys_at(s["keys"], (i0 + j * B) / sr), sr) for j in range((i1 - i0) // B + 2)]
+            fl = max(1, int(0.01 * sr))
+            lp = 0.0
+            for i in range(i0, i1):
+                j, fr = divmod(i - i0, B)
+                u, w = steps[j], steps[j + 1]
+                fr /= B
+                gl, gr, gd, ca = (p + (q - p) * fr for p, q in zip(u, w))
+                lp += ca * (x[i - i0] - lp)
+                v = lp * g0 * min(1.0, (i - i0) / fl, (i1 - 1 - i) / fl)
+                dl, dr = v * gd * gl, v * gd * gr
+                L[i] += dl
+                R[i] += dr
+                send[i] += v * gs
+                b = i // blk
+                eL[b] += dl * dl
+                eR[b] += dr * dr
+        per.append({"file": s["file"], "blocks": [{"t": round(b * blk / sr, 2), "lr_db": _lr(eL[b], eR[b]),
+                                                   "level_db": round(A.db(math.sqrt((eL[b] + eR[b]) / 2 / blk)), 2)} for b in range(nb)]})
+    if rt60:
+        rl, rr = room_tail(send, sr, rt60, n, a.width)
+        L = [p + q for p, q in zip(L, rl)]
+        R = [p + q for p, q in zip(R, rr)]
+    pk = max(max(abs(v) for v in L), max(abs(v) for v in R))
+    trim = A.undb(-1.0) / pk if pk > A.undb(-1.0) else 1.0
+    if trim != 1.0:
+        L, R = [v * trim for v in L], [v * trim for v in R]
+    A.write_wav(a.out, A.Audio(sr, [L, R]))
+    derive(a.out, files, {"op": "scene", "room": plan["room"], "rt60_s": rt60, "sources": len(files), "date": today()})
+    mix = []
+    for b in range(nb):
+        el = sum(v * v for v in L[b * blk:(b + 1) * blk])
+        er = sum(v * v for v in R[b * blk:(b + 1) * blk])
+        mix.append({"t": round(b * blk / sr, 2), "lr_db": _lr(el, er), "level_db": round(A.db(math.sqrt((el + er) / 2 / blk)), 2)})
+    rep = {"ok": True, "out": a.out, "sr": sr, "seconds": round(n / sr, 3), "room": plan["room"], "rt60_s": rt60,
+           "trim_db": round(A.db(trim), 2), "mix": mix, "sources": per,
+           "note": "lr_db above 0 is left; stereo cannot place front against back (az 0 and 180 both read centre). RT60 bands from arXiv:2610.34415"}
+    if a.report:
+        Path(a.report).write_text(json.dumps(rep, indent=1), encoding="utf-8")
+    return rep
+
+
 def cmd_finish(a):
     guard_edit([a.input], a.override_licence)
     if a.dest not in DESTS:
@@ -1649,6 +1841,13 @@ def build_parser():
     c.add_argument("--tol", type=float, default=1.0, help="match tolerance and lag limit, in frames")
     c.add_argument("--max-lag", type=float, default=0.5, dest="max_lag", help="largest offset in seconds counted toward the lag")
     c.add_argument("--json", action="store_true", help="accepted for symmetry; output is always JSON")
+    c = add("scene", cmd_scene)
+    c.add_argument("--plan", required=True, help="scene.json: duration, room, sources with file, keys [t, az, el, dist], gain_db")
+    c.add_argument("--out", required=True)
+    c.add_argument("--report", help="also write the report JSON here")
+    c.add_argument("--sr", type=int, default=48000)
+    c.add_argument("--width", type=float, default=0.7, help="side level of the reverb return above 1 kHz; 0 is a mono tail")
+    ov(c)
     c = add("place", cmd_place)
     c.add_argument("list")
     c.add_argument("--out")
