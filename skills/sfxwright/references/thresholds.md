@@ -23,6 +23,9 @@ Limits live in `LIMITS` in `sfx_audio.py`. They started as guesses from DSP book
 | NOISE_PERIOD | `check --noise`: highest autocorrelation at a lag of 20 ms to 1 s | above 0.3 |
 | FORCE_GAIN_ONLY | `set --force`: louder third at least 3 dB up but its median centroid under 1.05x the softer third's | flag |
 | TOO_EVEN | spread of gaps between onsets | below 0.03 |
+| LATE, EARLY | `avsync`: median audio-minus-video event offset | beyond `--tol` frames (1) |
+| LOW_MATCH | `avsync`: motion events with a sound within `--tol` frames after the lag | under half |
+| FEW_EVENTS | `avsync`: event pairs inside `--max-lag` | under 3, lag not flagged |
 
 ## Book checks, uncalibrated, 2026-11-19
 
@@ -80,3 +83,7 @@ Real tone always trips the checks written for one-shots: the takes flagged CUT_T
 - DC can flag short, low-heavy sounds whose mean is not truly offset.
 - Onset counts are estimates.
 - A tuned hit needs about 30 ms of body to carry pitch; under about 10 ms it reads as a click whatever its timbre. Book rule (Loy, *Musimathics* vol. 1, sec. 6.10), no check behind it.
+
+## avsync, uncalibrated, 2026-11-20
+
+The 1-frame limit is sfxwright's tight sync class, kept from `place`. LiveFoley (arXiv:2611.05988) found viewers notice action lag near 0.34 s, speech 0.49 s, ambient 0.85 s (6 people), far looser than film practice, so it is context, not the limit. Synthetic flash and click clip: 120 ms late reads 109 ms, in sync reads -11 ms (onset reader bias). Two real generated clips gave 1 and 2 pairs and lags that meant nothing, hence FEW_EVENTS. Calibrate on real V2A takes before trusting it on live footage.

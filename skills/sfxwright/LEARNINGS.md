@@ -1,5 +1,8 @@
 # Learnings
 
+## 2026-11-20 avsync on real clips: few events, false events
+Trigger: first real run, two 8.7 s MiniMax H3 clips with generated audio (24 fps). One read 2 motion events and 4 onsets, lag 249 ms from a single pair; the other 3 events (one at 0.04 s, the first frame settling) and 8 onsets, lag 150 ms from 2 pairs, LOW_MATCH. Neither lag means anything: camera moves and cuts make motion events with no sound, and beds and music make onsets with no motion. Fix: FEW_EVENTS replaces LATE/EARLY under 3 matched pairs. Read the counts before the flags; trust a lag only with many sharp events (impacts, steps). Onsets read about 10 ms early on clean clicks (the onset reader's rise start), so a lag of -11 ms is in sync.
+
 ## 2026-11-06 Length is a maximum
 Trigger: a 3 s request to SA3 Medium returned 1.6 s of sound and silence. Hypothesis: always tidy generated takes and judge `sound_s`, not file length.
 

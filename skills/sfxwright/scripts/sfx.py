@@ -20,6 +20,7 @@ needed only for `gen`; without it, `gen --workflow-out` writes the workflow to h
   sequence  place single hits into a walk or run with uneven timing
   loop      make a seamless loop and score the seam
   place     lay sounds on a timeline by their sync points and report frame errors
+  avsync    sound against picture: audio onsets vs video motion, lag and match rate (needs ffmpeg)
   record-sheet  a recording plan for the sounds someone will record
   finish    level and format per destination       name     build or test a file name
   sheet     waveform PNG for looking               review   one clip to listen to, with times
@@ -50,7 +51,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import sfx_audio as A  # noqa: E402
 import sfx_synth as S  # noqa: E402
 
-VERSION = "0.2.0"
+VERSION = "0.2.1"
 SCHEMA = 1
 KINDS = ("one-shot", "loop", "ambience", "sequence", "stinger", "ui")
 STATUSES = ("planned", "rendered", "picked", "finished", "rejected")
@@ -1172,6 +1173,51 @@ def cmd_place(a):
     return {"ok": True, "fps": fps, "placed": report, "out": a.out, "note": "the peak is a measured stand-in for sync; check with picture"}
 
 
+def cmd_avsync(a):
+    """Score a soundtrack against its picture: video motion events against audio onsets.
+
+    Motion is the mean change of 64x36 gray frames at --fps; an event is a rise in it (median + 3 MAD, 4-frame
+    refractory). Audio onsets come from A.onsets. lag_ms is the median nearest audio-minus-video offset (positive =
+    audio late). Idea after LiveFoley (arXiv:2611.05988): sync is measured against the picture per event, with a
+    perceptual bound (action about 0.34 s); sfxwright keeps its own frame limits. Written fresh; no code from the paper.
+    A heuristic: camera moves, cuts and steady beds make false events, so read the counts before the flags.
+    """
+    fps = a.fps
+    if fps <= 0 or a.tol < 0:
+        raise Fail("--fps must be positive and --tol not negative")
+    motion = A.video_motion(a.video, fps)
+    vid = [i / fps for i in A.motion_events(motion, fps)]
+    src = a.audio or a.video
+    try:
+        au = A.read_audio(src)
+    except A.AudioError as e:
+        raise Fail("no audio read from %s (%s); pass --audio" % (src, e))
+    aud = A.onsets(au.mono(), au.sr)
+    tol_s = a.tol / fps
+    lag, used = A.event_lag(vid, aud, a.max_lag)
+    lag = lag or 0.0
+    at0 = A.matched(vid, aud, 0.0, tol_s)
+    after = A.matched(vid, aud, lag, tol_s)
+    flags = []
+    if not vid or not aud:
+        flags.append("NO_EVENTS")
+    elif used < 3:  # on real clips one or two pairs gave 150-250 ms lags that meant nothing
+        flags.append("FEW_EVENTS")
+    elif lag > tol_s + 1e-9:
+        flags.append("LATE")
+    elif lag < -tol_s - 1e-9:
+        flags.append("EARLY")
+    if vid and aud and after * 2 < len(vid):
+        flags.append("LOW_MATCH")
+    return {"ok": True, "fps": fps, "tol_frames": a.tol, "lag_ms": round(lag * 1000), "lag_frames": round(lag * fps, 2),
+            "video_events": len(vid), "audio_onsets": len(aud), "offsets_used": used,
+            "matched_at_0": at0, "matched_after_lag": after,
+            "match_rate_at_0": round(at0 / len(vid), 3) if vid else None,
+            "match_rate_after_lag": round(after / len(vid), 3) if vid else None,
+            "video_events_s": [round(t, 3) for t in vid[:50]], "audio_onsets_s": aud[:50], "flags": flags,
+            "note": "heuristic: camera moves, cuts and beds add false events; about 0.34 s is where viewers notice action lag (arXiv:2611.05988)"}
+
+
 def cmd_finish(a):
     guard_edit([a.input], a.override_licence)
     if a.dest not in DESTS:
@@ -1596,6 +1642,13 @@ def build_parser():
     c.add_argument("list")
     c.add_argument("--out")
     c.add_argument("--all", action="store_true", help="every sound, not only those with a record route")
+    c = add("avsync", cmd_avsync)
+    c.add_argument("--video", required=True)
+    c.add_argument("--audio", help="a separate mix; default is the video's own audio track")
+    c.add_argument("--fps", type=float, default=25.0, help="rate the picture is read at")
+    c.add_argument("--tol", type=float, default=1.0, help="match tolerance and lag limit, in frames")
+    c.add_argument("--max-lag", type=float, default=0.5, dest="max_lag", help="largest offset in seconds counted toward the lag")
+    c.add_argument("--json", action="store_true", help="accepted for symmetry; output is always JSON")
     c = add("place", cmd_place)
     c.add_argument("list")
     c.add_argument("--out")

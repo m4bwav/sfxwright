@@ -246,6 +246,54 @@ def onsets(mono, sr, merge_ms=100.0):
     return times
 
 
+def video_motion(path, fps, w=64, h=36):
+    """Per-frame motion: mean absolute change of small gray frames, 0 for the first frame. Needs ffmpeg."""
+    exe = ffmpeg()
+    if not exe:
+        raise AudioError("ffmpeg not found; avsync needs it to read video frames")
+    r = subprocess.run([exe, "-hide_banner", "-loglevel", "error", "-i", str(path), "-an", "-vf",
+                        "fps=%s,scale=%d:%d,format=gray" % (fps, w, h), "-f", "rawvideo", "-"], capture_output=True)
+    if r.returncode:
+        raise AudioError("ffmpeg failed: " + r.stderr.decode("utf-8", "replace").strip()[:400])
+    n = w * h
+    raw = r.stdout
+    frames = [raw[i:i + n] for i in range(0, len(raw) - n + 1, n)]
+    return [0.0] + [sum(abs(a - b) for a, b in zip(p, q)) / n for p, q in zip(frames, frames[1:])]
+
+
+def motion_events(motion, fps, k=3.0, floor=0.1, refractory=4):
+    """Frame indexes where motion starts: half-wave rise of the motion curve, local peaks above median + k MAD
+    and above `floor` of the largest rise, at least `refractory` frames apart (a flash's off-change is not an event)."""
+    rise = [0.0] + [max(0.0, b - a) for a, b in zip(motion, motion[1:])]
+    if len(rise) < 3 or max(rise) <= 0:
+        return []
+    m = median(rise)
+    mad = median([abs(v - m) for v in rise])
+    t = max(m + k * 1.4826 * mad, floor * max(rise), 1e-9)
+    out = []
+    for i in range(1, len(rise)):
+        right = rise[i + 1] if i + 1 < len(rise) else 0.0
+        if rise[i] > t and rise[i] >= rise[i - 1] and rise[i] >= right and (not out or i - out[-1] > refractory):
+            out.append(i)
+    return out
+
+
+def event_lag(video_s, audio_s, max_lag_s=0.5):
+    """Median of each video event's nearest audio onset offset (audio minus video) within max_lag_s, or None."""
+    offs = []
+    for v in video_s:
+        if not audio_s:
+            break
+        o = min((a - v for a in audio_s), key=abs)
+        if abs(o) <= max_lag_s:
+            offs.append(o)
+    return (median(offs) if offs else None), len(offs)
+
+
+def matched(video_s, audio_s, shift_s, tol_s):
+    return sum(1 for v in video_s if any(abs(a - v - shift_s) <= tol_s + 1e-9 for a in audio_s))
+
+
 def _clip_runs(ch):
     """Longest run of identical samples at this channel's own extreme, and at digital full scale."""
     peak = max((abs(v) for v in ch), default=0.0)
