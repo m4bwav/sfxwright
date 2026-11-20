@@ -14,7 +14,7 @@ needed only for `gen`; without it, `gen --workflow-out` writes the workflow to h
   check     per-file readings and flags            set      one variation set: duplicates, outliers, level
   timing    a sequence: are the hits too evenly spaced or too alike
   degrade   plant a known fault, to test the checks
-  edit      trim, fade, gain, pitch, stretch, reverse, convolve, dc, tidy
+  edit      trim, fade, gain, pitch, stretch, reverse, convolve, dc, tidy, softclip
   layer     stack parts with offsets, aligned on their peaks
   vary      a variation set from one or more sources
   sequence  place single hits into a walk or run with uneven timing
@@ -561,6 +561,18 @@ def cmd_check(a):
         if a.tone_match:
             m["tone_gaps_db"], extra = tone_match(f, a.tone_match)
             flags = flags + extra
+        if len(au.channels) > 1 and not m.get("silent"):
+            lag = A.channel_lag(au)
+            if lag:
+                m["channel_lag_ms"], m["channel_lag_corr"] = lag["lag_ms"], lag["corr"]
+                if abs(lag["lag_ms"]) > A.LIMITS["haas_echo_ms"] and lag["corr"] > A.LIMITS["haas_corr"]:
+                    flags = flags + ["HAAS_ECHO"]
+        if a.noise and not m.get("silent"):
+            npd = A.noise_period(au.mono(), au.sr)
+            m["noise_period_corr"], m["noise_period_s"] = npd["corr"], npd["lag_s"]
+            if npd["corr"] > A.LIMITS["noise_period"]:
+                flags = flags + ["NOISE_PERIOD"]
+        flags = [x for x in flags if x not in (a.waive or "").split(",")]
         rows.append({"file": Path(f).name, "flags": flags, **({} if not a.json else {"readings": m}), **({} if a.json else {"m": m})})
     bad = sum(1 for r in rows if r["flags"])
     if a.json:
@@ -643,10 +655,21 @@ def cmd_set(a):
         flags.append("OUTLIERS")
     if max(rms) - min(rms) > 3:
         flags.append("LEVEL_SPREAD")
+    force = None
+    if getattr(a, "force", False):
+        # Louder should be brighter: a force axis that only turns up the gain sounds like one hit at different volumes (Boulanger ed., Csound Book ch. 6).
+        live = sorted((i["m"] for i in items if not i["m"].get("silent")), key=lambda m: m["rms_db"])
+        third = max(1, len(live) // 3)
+        soft = A.median([m["centroid_hz"] or 1 for m in live[:third]])
+        loud = A.median([m["centroid_hz"] or 1 for m in live[-third:]])
+        lvl = A.median([m["rms_db"] for m in live[-third:]]) - A.median([m["rms_db"] for m in live[:third]])
+        force = {"level_rise_db": round(lvl, 2), "centroid_ratio": round(loud / soft, 3)}
+        if lvl >= 3 and loud < soft * 1.05:
+            flags.append("FORCE_GAIN_ONLY")
     return {"ok": True, "files": len(items), "flags": flags, "near_duplicates": dup, "outliers": outliers,
             "peak_spread_db": round(max(peaks) - min(peaks), 2), "rms_spread_db": round(max(rms) - min(rms), 2),
             "corr_max": max(p["corr"] for p in pairs), "corr_median": round(A.median([p["corr"] for p in pairs]), 3),
-            "attack_dist_median": round(A.median([p["attack_dist"] for p in pairs]), 2), "note": "heuristic; a blind listen decides whether a set machine-guns"}
+            "attack_dist_median": round(A.median([p["attack_dist"] for p in pairs]), 2), **({"force": force} if force else {}), "note": "heuristic; a blind listen decides whether a set machine-guns"}
 
 
 def cmd_timing(a):
@@ -776,7 +799,9 @@ def convolve(inp, ir, outp, mix, wet_db=0.0):
     dry = A.read_audio(inp)
     with tempfile.TemporaryDirectory() as td:
         tmp = Path(td) / "wet.wav"
-        A.run_ffmpeg(["-i", str(inp), "-i", str(ir), "-filter_complex", "[0:a][1:a]afir=dry=1:wet=1:irnorm=-1:gtype=none", "-c:a", "pcm_f32le", str(tmp)])
+        # afir stops at the input's end, which cut the reverb tail; pad the input by the IR's length first (Wilson, Make: Analog Synthesizers ch. 7).
+        pad = A.read_audio(ir).seconds
+        A.run_ffmpeg(["-i", str(inp), "-i", str(ir), "-filter_complex", "[0:a]apad=pad_dur=%.4f[d];[d][1:a]afir=dry=1:wet=1:irnorm=-1:gtype=none" % pad, "-c:a", "pcm_f32le", str(tmp)])
         wet = A.read_audio(tmp)
     n = max(dry.n, wet.n)
     nch = max(len(dry.channels), len(wet.channels))
@@ -840,6 +865,12 @@ def cmd_edit(a):
                 raise Fail("--ratio is 1 or more")
             au = compress(au, a.value if a.value is not None else -6.0, a.ratio)
             step["ratio"] = a.ratio
+        elif a.op == "softclip":
+            # Linear near zero, rounder above: tanh at --value dB of drive, scaled back to the input peak (Boulanger ed., Csound Book ch. 29-30).
+            g = A.undb(a.value if a.value is not None else 6.0)
+            top = max(max(abs(s) for s in c) for c in au.channels) or 1.0
+            k = top / math.tanh(g * top)
+            au = A.Audio(au.sr, [[k * math.tanh(g * s) for s in c] for c in au.channels])
         elif a.op == "reverse":
             au = A.Audio(au.sr, [c[::-1] for c in au.channels])
         elif a.op == "dc":
@@ -1488,6 +1519,7 @@ def build_parser():
     c.add_argument("--waive", help="comma-separated flags this brief allows, such as CLICK for crackle")
     c.add_argument("--mono", action="store_true", help="fold to mono and flag a loss over 3 dB; on by default for 3D sounds in a list")
     c.add_argument("--tone-match", help="a neighbouring recording: flag a fill whose bands do not match it")
+    c.add_argument("--noise", action="store_true", help="noise-based sound: flag a repeating noise buffer (NOISE_PERIOD)")
     c.add_argument("--json", action="store_true")
     c = add("tone", cmd_tone)
     c.add_argument("input")
@@ -1502,7 +1534,9 @@ def build_parser():
     c.add_argument("--level", type=float, default=-20.0, help="pop level in dBFS")
     c.add_argument("--verify", action="store_true", help="measure existing pops, frames off the 2 s mark")
     c.add_argument("--tolerance", type=float, default=0.5, help="frames")
-    add("set", cmd_set).add_argument("files", nargs="+")
+    c = add("set", cmd_set)
+    c.add_argument("files", nargs="+")
+    c.add_argument("--force", action="store_true", help="the set spans a force axis: flag FORCE_GAIN_ONLY when the louder takes are not brighter")
     add("timing", cmd_timing).add_argument("file")
     c = add("degrade", cmd_degrade)
     c.add_argument("input")
@@ -1514,7 +1548,7 @@ def build_parser():
     c = add("edit", cmd_edit)
     c.add_argument("input")
     c.add_argument("out")
-    c.add_argument("--op", required=True, choices=("tidy", "trim", "fade", "gain", "peak", "pitch", "stretch", "reverse", "convolve", "dc", "compress"))
+    c.add_argument("--op", required=True, choices=("tidy", "trim", "fade", "gain", "peak", "pitch", "stretch", "reverse", "convolve", "dc", "compress", "softclip"))
     c.add_argument("--ratio", type=float, default=6.0, help="compress: ratio above --value dB (default -6)")
     c.add_argument("--value", type=float)
     c.add_argument("--start", type=float)

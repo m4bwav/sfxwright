@@ -29,3 +29,6 @@ Trigger: Lovecraft Zann stair bed. `sequence step_02 step_03 --count 5 --gap 1.4
 
 ## 2026-11-14 FM bell failed the checks; Karplus-Strong needed a zero-mean preload
 Trigger: Musimathics build. An FM bell (carrier 440 Hz, ratio 1.4, index 6 decaying) flagged CLICK 75 and END_SILENCE where `modal material=metal` read ok (click 3.7); index 3 still CLICK 23, 880 Hz END_SILENCE only. Not adopted. Candidate for Mark's ears: FM metal may still beat modal by ear, and the CLICK limit was tuned on hits, not dense inharmonic tones. Also: a noise-filled delay line keeps its DC forever, so after `_finish` removes the mean the tail sat at -54 dB and flagged NOISE_FLOOR; subtracting the preload mean fixed it (floor -63 to -68 dB at 82-660 Hz).
+
+## 2026-11-19 ffmpeg afir cut every convolve tail
+Trigger: books round 6, Wilson's "pad silence before reverb". `edit --op convolve` output was exactly as long as the dry input: afir stops when its first input ends, so the reverb tail was cut. Fix: `apad=pad_dur=<IR seconds>` before afir. A whole-file RMS comparison then reads about 4 dB low because the file is longer; compare energy instead.

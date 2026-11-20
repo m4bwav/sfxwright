@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+Books round 6. `check` reads the delay between stereo channels and flags HAAS_ECHO above 30 ms; `check --noise` flags NOISE_PERIOD when a noise buffer repeats; `set --force` flags FORCE_GAIN_ONLY when the louder takes are not brighter. `edit --op softclip`. `edit --op convolve` pads the input by the impulse length: afir stopped at the input's end and cut the tail (the level test now compares energy, since the wet file is longer). `synth granular` and `colour=white|pink|brown` on `wind` and `rain`. plan.md: force and distance (louder is brighter, dry-to-reverb ratio, reverb on a shared return); edit.md: one modulation fuses layers; finish.md: Unity import by use. Tests in `BooksRound6`, each check proved on a bad and a good case. Because: Boulanger ed., *The Csound Book* (ch. 6, 7, 11, 16, 18, 23, 25, 29-30); Wilson, *Make: Analog Synthesizers* (ch. 3, 7); Lanham, *Game Audio Development with Unity 5.X* (ch. 11). Thresholds uncalibrated; nothing heard.
+
 ## 0.1.29, 2026-11-18
 
 Fix: `edit --op convolve` came out about 43 dB too quiet with a `synth ir` impulse (dry pluck RMS -24 dB, wet at `--value 1` RMS -65 dB). Cause: ffmpeg afir's default `irnorm=1` rescales the IR. The IR now goes in raw (`irnorm=-1`, `gtype=none`) and the wet path is scaled to the dry RMS before the `--value` mix; new `--wet-db` (default 0) sets the wet level against the dry. A mix that would clip is pulled to -1 dBFS. After: wet RMS -24 dB at `--value 1`. Test `test_convolve_wet_level_matches_dry`. Because: bug report from a musicwright session (its `mw.py reverb` had the level right).

@@ -419,9 +419,68 @@ def mono_loss(audio):
     return round(min(60.0, -10 * math.log10(max(summed, 1e-12) / pw)), 2)
 
 
+def _decimate(x, k):
+    return [sum(x[i:i + k]) / k for i in range(0, len(x) - k + 1, k)] if k > 1 else list(x)
+
+
+def _xcorr(a, b):
+    """Circular cross-correlation by FFT, zero-padded so lags up to len/2 do not wrap. c[l] = sum a[i] * b[i + l]."""
+    n = 1
+    while n < 2 * max(len(a), len(b)):
+        n *= 2
+    fa = fft(list(a) + [0.0] * (n - len(a)))
+    fb = fft(list(b) + [0.0] * (n - len(b)))
+    prod = [x.conjugate() * y for x, y in zip(fa, fb)]
+    inv = fft([p.conjugate() for p in prod])
+    return [v.real / n for v in inv]
+
+
+def channel_lag(audio, max_ms=60.0):
+    """Delay of the right channel against the left in ms (positive: right later) and the correlation there.
+    Inter-channel delay of about 1.5-10 ms widens one source; past about 10-40 ms it splits into an echo (Boulanger ed., Csound Book ch. 25)."""
+    if len(audio.channels) < 2:
+        return None
+    k = max(1, audio.sr // 12000)
+    L, R = audio.channels[0], audio.channels[1]
+    ip = max(range(len(L)), key=lambda i: abs(L[i]) + abs(R[i]))
+    lo = max(0, ip - int(0.2 * audio.sr))
+    seg = int(1.2 * audio.sr)
+    a, b = _decimate(L[lo:lo + seg], k), _decimate(R[lo:lo + seg], k)
+    ea, eb = math.sqrt(sum(v * v for v in a)), math.sqrt(sum(v * v for v in b))
+    if ea * eb <= 1e-12:
+        return None
+    c = _xcorr(a, b)
+    sr = audio.sr / k
+    m = int(max_ms / 1000 * sr)
+    lags = list(range(-m, m + 1))
+    best = max(lags, key=lambda l: c[l % len(c)])
+    return {"lag_ms": round(best / sr * 1000, 2), "corr": round(c[best % len(c)] / (ea * eb), 3)}
+
+
+def noise_period(mono, sr, min_s=0.02, max_s=1.0):
+    """Highest normalised autocorrelation at a lag between min_s and max_s, and that lag. Fresh noise reads near 0;
+    a short noise buffer played on repeat reads high at its period (Wilson, Make: Analog Synthesizers ch. 3)."""
+    k = max(1, sr // 4000)
+    x = _decimate(mono[: int(2.5 * sr)], k)
+    mean = sum(x) / len(x) if x else 0.0
+    x = [v - mean for v in x]
+    e = sum(v * v for v in x)
+    if e <= 1e-12:
+        return {"corr": 0.0, "lag_s": None}
+    c = _xcorr(x, x)
+    r = sr / k
+    lo, hi = int(min_s * r), min(int(max_s * r), len(x) // 2)
+    if hi <= lo:
+        return {"corr": 0.0, "lag_s": None}
+    best = max(range(lo, hi), key=lambda l: c[l])
+    # Overlap shrinks with the lag; scale back up so a repeat late in the window still reads near 1.
+    return {"corr": round(c[best] / e * len(x) / (len(x) - best), 3), "lag_s": round(best / r, 3)}
+
+
 # Starting thresholds, calibrated as references/thresholds.md says.
 LIMITS = {"tone_gap_db": 6.0, "dc_db": -60.0, "head_db": -50.0, "tail_db": -60.0, "click": 20.0, "floor_db": -60.0, "flat_run": 4,
-          "lead_s": 0.05, "end_s": 0.25, "seam": 5.0, "seam_spectral": 1.0, "mono_loss_db": 3.0}
+          "lead_s": 0.05, "end_s": 0.25, "seam": 5.0, "seam_spectral": 1.0, "mono_loss_db": 3.0,
+          "haas_echo_ms": 30.0, "haas_corr": 0.5, "noise_period": 0.3}
 
 
 def flag(m, want_seconds=None, waive=(), loop=False, seam=None, spectral=None):
