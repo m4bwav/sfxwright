@@ -40,6 +40,22 @@ One low cloth track following movement; special garments apart. Excess gets cut,
 - **Distance is the dry-to-reverb ratio:** farther means less direct sound against the same room, not just less gain; room size is the spacing of the early reflections (ch. 23). Width from a channel delay stays under about 10 ms, or it splits into an echo (`check` flags HAAS_ECHO, ch. 25).
 - **Reverb is a mix return, not baked in:** variations stay dry and the game or mix sends them to one shared reverb; bake the room only into a fixed-space one-shot. A reverb per event instance was the CPU spike in Lanham, *Game Audio Development with Unity 5.X*, ch. 11.
 
+## Scene plans
+
+For a stereo trailer or cinematic pass (a fly-by, an approach, a door across the room), write the motion as data and render it: `SFX scene --plan scene.json --out scene.wav [--report r.json] [--sr 48000] [--width 0.7]`. Game sounds stay dry and mono for the engine to place.
+
+```
+{"duration": 4, "room": "moderate",
+ "sources": [{"file": "engine.wav", "keys": [[0, 90, 0, 1], [2, 0, 0, 2], [4, -90, 0, 4]],
+              "gain_db": 0, "send_db": -12, "active": [0, 4], "loop": true}]}
+```
+
+- Keys are `[t, az_deg, el_deg, dist_m]`, interpolated in a straight line between keys and held past the ends; one key is a static source. Positive azimuth is left. Stereo cannot tell front from back: az 0 and 180 both sit centre.
+- Rooms: `dry` 0.22 s, `moderate` 0.5 s, `reverberant` 1.0 s RT60, `outdoor` none (band midpoints from the room classes of AMBIT, arXiv:2610.34415); `"rt60": s` overrides. The output runs one RT60 past `duration` so the tail is not cut.
+- Per source: equal-power pan, gain 1/d past 1 m (4 m is 12 dB under 1 m), an air low-pass from 20 kHz at 1 m to 6 kHz at 50 m, and a reverb send that does not fall with distance, so far reads as far.
+- The reverb return is one mono tail plus an all-pass side signal above 1 kHz, so L and R carry the same energy per band. Separate noise tails per channel pull a centred tone sideways. A steady tone above 1 kHz can still sit up to about 2 dB off centre from interference with the direct sound; that is a room effect, not a bug.
+- The report gives L/R dB (above 0 is left) and level per 0.5 s for the mix and per source, and `trim_db` when the mix was pulled under -1 dBFS peak. Check that a fly-by's L/R falls steadily before listening.
+
 ## Ambience
 
 Build from a quiet bed plus sparse events per location, not one long take. Practitioner advice, not a measurement.

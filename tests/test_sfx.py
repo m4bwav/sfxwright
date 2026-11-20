@@ -728,3 +728,72 @@ class AvSync(Base):
         _, r = run("avsync", "--video", v, "--audio", two)
         self.assertIn("FEW_EVENTS", r["flags"], r)
         self.assertNotIn("LATE", r["flags"], r)
+
+
+class Scene(Base):
+    """sfx.py scene (after arXiv:2610.34415): checks on our own tones and noise at 16 kHz to keep the suite quick."""
+    SR = 16000
+
+    def tone(self, hz=440.0, sec=4.0, name="tone.wav"):
+        f = self.d / name
+        A.write_wav(f, A.Audio(self.SR, [[0.5 * math.sin(2 * math.pi * hz * i / self.SR) for i in range(int(sec * self.SR))]]))
+        return f
+
+    def render(self, plan, name="scene"):
+        p = self.d / (name + ".json")
+        p.write_text(json.dumps(plan), encoding="utf-8")
+        code, r = run("scene", "--plan", p, "--out", self.d / (name + ".wav"), "--sr", self.SR, "--report", self.d / (name + ".report.json"))
+        self.assertEqual(code, 0, r)
+        self.assertEqual(r, json.loads((self.d / (name + ".report.json")).read_text(encoding="utf-8")))
+        return r
+
+    def flyby(self, room):
+        self.tone()
+        keys = [[0, 90, 0, 1], [2, 0, 0, 2], [4, -90, 0, 4]]
+        return self.render({"duration": 4, "room": room, "sources": [{"file": "tone.wav", "keys": keys}]}, room)
+
+    def test_flyby_lr_falls_steadily(self):
+        for room in ("outdoor", "moderate"):
+            lr = [b["lr_db"] for b in self.flyby(room)["mix"]]
+            self.assertEqual(len(lr), 8)
+            self.assertTrue(all(x > y for x, y in zip(lr, lr[1:])), (room, lr))
+            self.assertGreater(lr[0], 10, (room, lr))
+            self.assertLess(lr[-1], -4, (room, lr))
+
+    def test_centred_tone_balanced_with_reverb(self):
+        # Separate noise tails per channel pulled this tone 6.5 dB sideways in the harvest prototype.
+        self.tone(sec=3.0)
+        for room in ("dry", "moderate", "reverberant"):
+            r = self.render({"duration": 3, "room": room, "sources": [{"file": "tone.wav", "keys": [[0, 0, 0, 1]]}]}, room)
+            for b in r["mix"]:
+                self.assertLess(abs(b["lr_db"]), 1.0, (room, r["mix"]))
+
+    def test_four_metres_10_to_13_db_under_one(self):
+        self.tone(sec=2.0)
+        lv = {}
+        for d in (1, 4):
+            r = self.render({"duration": 2, "room": "outdoor", "sources": [{"file": "tone.wav", "keys": [[0, 0, 0, d]]}]}, "d%d" % d)
+            lv[d] = r["mix"][2]["level_db"]
+        self.assertTrue(10 <= lv[1] - lv[4] <= 13, lv)
+
+    def test_tail_is_stereo_and_matched(self):
+        import random
+        rng = random.Random(3)
+        f = self.d / "noise.wav"
+        A.write_wav(f, A.Audio(self.SR, [[rng.uniform(-0.3, 0.3) for _ in range(self.SR)]]))
+        self.render({"duration": 1, "room": "reverberant", "sources": [{"file": "noise.wav", "send_db": 0}]}, "tail")
+        au = A.read_audio(self.d / "tail.wav")
+        self.assertAlmostEqual(au.seconds, 2.0, delta=0.01)
+        L, R = (c[int(1.05 * self.SR):int(1.5 * self.SR)] for c in au.channels)
+        el, er = sum(v * v for v in L), sum(v * v for v in R)
+        self.assertLess(abs(10 * math.log10(el / er)), 1.0)
+        corr = sum(x * y for x, y in zip(L, R)) / math.sqrt(el * er)
+        self.assertLess(corr, 0.95)  # still a stereo tail, not a mono copy
+
+    def test_bad_plan_fails(self):
+        self.tone(sec=0.5)
+        p = self.d / "bad.json"
+        p.write_text(json.dumps({"duration": 1, "room": "cave", "sources": [{"file": "tone.wav"}]}), encoding="utf-8")
+        code, r = run("scene", "--plan", p, "--out", self.d / "x.wav")
+        self.assertEqual(code, 1)
+        self.assertIn("room", r["error"])

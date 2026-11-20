@@ -1,5 +1,8 @@
 # Learnings
 
+## 2026-11-20 scene reverb: match the tails, then expect interference on high tones
+Trigger: the harvest prototype for arXiv:2610.34415 used a separate noise IR per channel; a centred 440 Hz tone read -6.5 dB L/R. Fix in `scene`: one mono tail plus an all-pass side above 1 kHz, so L and R have the same magnitude per band and share the low band. Measured at 16 kHz: 220 and 440 Hz within 0.4 dB in dry, moderate and reverberant rooms; 1 kHz up to 1.7 dB, 2 kHz 1.1 dB, 4 kHz 1.0 dB. The rest is the side signal's phase against the direct sound on a steady tone, which no fixed stereo reverb avoids. Always test a stereo reverb with a tone, not only noise; noise averages the fault away.
+
 ## 2026-11-20 avsync on real clips: few events, false events
 Trigger: first real run, two 8.7 s MiniMax H3 clips with generated audio (24 fps). One read 2 motion events and 4 onsets, lag 249 ms from a single pair; the other 3 events (one at 0.04 s, the first frame settling) and 8 onsets, lag 150 ms from 2 pairs, LOW_MATCH. Neither lag means anything: camera moves and cuts make motion events with no sound, and beds and music make onsets with no motion. Fix: FEW_EVENTS replaces LATE/EARLY under 3 matched pairs. Read the counts before the flags; trust a lag only with many sharp events (impacts, steps). Onsets read about 10 ms early on clean clicks (the onset reader's rise start), so a lag of -11 ms is in sync.
 
