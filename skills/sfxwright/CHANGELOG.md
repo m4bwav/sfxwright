@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.2.0, 2026-11-19
 
 Books round 6. `check` reads the delay between stereo channels and flags HAAS_ECHO above 30 ms; `check --noise` flags NOISE_PERIOD when a noise buffer repeats; `set --force` flags FORCE_GAIN_ONLY when the louder takes are not brighter. `edit --op softclip`. `edit --op convolve` pads the input by the impulse length: afir stopped at the input's end and cut the tail (the level test now compares energy, since the wet file is longer). `synth granular` and `colour=white|pink|brown` on `wind` and `rain`. plan.md: force and distance (louder is brighter, dry-to-reverb ratio, reverb on a shared return); edit.md: one modulation fuses layers; finish.md: Unity import by use. Tests in `BooksRound6`, each check proved on a bad and a good case. Because: Boulanger ed., *The Csound Book* (ch. 6, 7, 11, 16, 18, 23, 25, 29-30); Wilson, *Make: Analog Synthesizers* (ch. 3, 7); Lanham, *Game Audio Development with Unity 5.X* (ch. 11). Thresholds uncalibrated; nothing heard.
 
