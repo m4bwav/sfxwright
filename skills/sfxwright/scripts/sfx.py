@@ -52,7 +52,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import sfx_audio as A  # noqa: E402
 import sfx_synth as S  # noqa: E402
 
-VERSION = "0.2.2"
+VERSION = "0.2.3"
 SCHEMA = 1
 KINDS = ("one-shot", "loop", "ambience", "sequence", "stinger", "ui")
 STATUSES = ("planned", "rendered", "picked", "finished", "rejected")
@@ -220,9 +220,54 @@ def cmd_add(a):
     for k, v in (("sync_point_s", a.sync_point), ("at_s", a.at), ("trigger", a.trigger), ("priority", a.priority), ("max_instances", a.max_instances), ("spatial", a.spatial), ("sync_class", a.sync_class), ("role", a.role), ("gain_db", a.gain)):
         if v is not None:
             s[k] = v
+    r = {}
+    for k, v in (("pitch", a.pitch_range), ("volume_db", a.volume_range_db)):
+        if v is not None:
+            r[k] = v
+    if a.no_repeat:
+        r["no_repeat"] = True
+    if r:
+        s["randomize"] = r
+    pb = {}
+    for k, v in (("distance", a.dist), ("max_voices", a.max_voices), ("interval_s", a.interval), ("attack_s", a.attack), ("release_s", a.release)):
+        if v is not None:
+            pb[k] = v
+    if a.mute_paused:
+        pb["mute_paused"] = True
+    if pb:
+        s["playback"] = pb
     d["sounds"].append(s)
     save_list(a.list, d)
     return {"ok": True, "id": a.id, "count": len(d["sounds"])}
+
+
+def _span(text):
+    """'0.9-1.1' or '-2-0' -> (lo, hi); None when unparseable."""
+    m = re.match(r"^ *(-?[0-9.]+) *- *(-?[0-9.]+) *$", str(text))
+    try:
+        return (float(m.group(1)), float(m.group(2))) if m else None
+    except ValueError:
+        return None
+
+
+def playback_warnings(d):
+    """Runtime playback contract checks: warnings, never errors."""
+    out = []
+    for s in d.get("sounds", []):
+        sid, r, pb = s.get("id"), s.get("randomize", {}), s.get("playback", {})
+        if (s.get("variations") or 1) > 1 and not r.get("no_repeat"):
+            out.append("NO_REPEAT_RULE: %s has %s variations and no --no-repeat" % (sid, s.get("variations")))
+        if s.get("spatial") == "3D" and "distance" not in pb:
+            out.append("NO_DISTANCE: %s is 3D with no --dist min-max" % sid)
+        if s.get("kind") in ("loop", "ambience") and "max_voices" not in pb and s.get("max_instances") is None:
+            out.append("NO_VOICE_CAP: %s is a %s with no --max-voices" % (sid, s.get("kind")))
+        for name, v in (("pitch", r.get("pitch")), ("volume", r.get("volume_db")), ("dist", pb.get("distance")), ("interval", pb.get("interval_s"))):
+            if v is None:
+                continue
+            sp = _span(v)
+            if sp is None or sp[0] > sp[1]:
+                out.append("RANGE_ORDER: %s --%s %s is not low-high" % (sid, name, v))
+    return out
 
 
 def cmd_validate(a):
@@ -239,7 +284,7 @@ def cmd_validate(a):
                 changed.append(t["file"])
     if changed:
         errs.append("changed since registered, register again: " + ", ".join(changed))
-    return {"ok": not errs, "errors": errs, "sounds": len(d["sounds"])}
+    return {"ok": not errs, "errors": errs, "warnings": playback_warnings(d), "sounds": len(d["sounds"])}
 
 
 def cmd_status(a):
@@ -1568,10 +1613,12 @@ def cmd_doc(a):
             rows.append([s["id"], "" if at is None else "%.3f" % at, "" if at is None else int(round(at * fps)), s["event"], s.get("role", ""), s.get("sync_class", ""), s["kind"], s["length_s"], pick.get("file", ""), s["status"]])
         text = _cols(rows, a.format)
     elif a.kind == "impl":
-        rows = [["Event", "Category", "Trigger", "Kind", "2D/3D", "Variations", "Files", "Pitch range", "Volume range", "No repeat", "Priority", "Max instances", "Format", "Load"]]
+        rows = [["Event", "Category", "Trigger", "Kind", "2D/3D", "Variations", "Files", "Pitch range", "Volume range", "No repeat", "Priority", "Max instances", "Distance", "Max voices", "Interval s", "Attack s", "Release s", "Mute paused", "Format", "Load"]]
         for s in d["sounds"]:
-            r = s.get("randomize", {})
-            rows.append([s["event"], s.get("category", ""), s.get("trigger", ""), s["kind"], s.get("spatial", ""), s["variations"], len(s.get("takes", [])), r.get("pitch", "+/-1 st (start point)"), r.get("volume", "+/-1.5 dB (start point)"), r.get("no_repeat", 1), s.get("priority", ""), s.get("max_instances", ""), s["format"], s.get("load", "")])
+            r, pb = s.get("randomize", {}), s.get("playback", {})
+            nr = r.get("no_repeat", 1)
+            rows.append([s["event"], s.get("category", ""), s.get("trigger", ""), s["kind"], s.get("spatial", ""), s["variations"], len(s.get("takes", [])), r.get("pitch", "+/-1 st (start point)"), r.get("volume_db", r.get("volume", "+/-1.5 dB (start point)")), "yes" if nr is True else nr, s.get("priority", ""), s.get("max_instances", ""),
+                         pb.get("distance", ""), pb.get("max_voices", ""), pb.get("interval_s", ""), pb.get("attack_s", ""), pb.get("release_s", ""), "yes" if pb.get("mute_paused") else "", s["format"], s.get("load", "")])
         text = _cols(rows, a.format)
     else:
         owed, disclose, rows = credits_for(d)
@@ -1710,6 +1757,15 @@ def build_parser():
     c.add_argument("--gain", type=float, help="dB applied by place")
     c.add_argument("--sync-class", dest="sync_class", choices=("tight", "loose", "bed"))
     c.add_argument("--role", choices=("hard", "background", "foley", "design", "ui"))
+    c.add_argument("--pitch-range", dest="pitch_range", help="per-play pitch ratio low-high, e.g. 0.9-1.1")
+    c.add_argument("--volume-range-db", dest="volume_range_db", help="per-play gain dB low-high, write --volume-range-db=-2-0 (a leading minus needs =)")
+    c.add_argument("--no-repeat", dest="no_repeat", action="store_true", help="never play the same take twice in a row")
+    c.add_argument("--dist", help="3D min-max distance in engine units, e.g. 0-30")
+    c.add_argument("--max-voices", type=int, dest="max_voices", help="voice cap for the event")
+    c.add_argument("--interval", help="sustainer replay interval s low-high, e.g. 0.2-0.7")
+    c.add_argument("--attack", type=float, help="fade in seconds")
+    c.add_argument("--release", type=float, help="fade out seconds")
+    c.add_argument("--mute-paused", dest="mute_paused", action="store_true")
     add("validate", cmd_validate).add_argument("list")
     add("status", cmd_status).add_argument("list")
     c = add("plan", cmd_plan)
