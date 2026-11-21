@@ -1758,7 +1758,7 @@ def build_parser():
     c.add_argument("--sync-class", dest="sync_class", choices=("tight", "loose", "bed"))
     c.add_argument("--role", choices=("hard", "background", "foley", "design", "ui"))
     c.add_argument("--pitch-range", dest="pitch_range", help="per-play pitch ratio low-high, e.g. 0.9-1.1")
-    c.add_argument("--volume-range-db", dest="volume_range_db", help="per-play gain dB low-high, e.g. -2-0")
+    c.add_argument("--volume-range-db", dest="volume_range_db", help="per-play gain dB low-high, write --volume-range-db=-2-0 (a leading minus needs =)")
     c.add_argument("--no-repeat", dest="no_repeat", action="store_true", help="never play the same take twice in a row")
     c.add_argument("--dist", help="3D min-max distance in engine units, e.g. 0-30")
     c.add_argument("--max-voices", type=int, dest="max_voices", help="voice cap for the event")

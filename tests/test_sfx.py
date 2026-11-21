@@ -245,7 +245,7 @@ class PlaybackContract(Base):
         self.assertIn("NO_DISTANCE", w)
 
     def test_flags_clean_and_in_sheet(self):
-        l = self.mk("--pitch-range", "0.9-1.1", "--volume-range-db", "-2-0", "--no-repeat", "--dist", "0-30", "--max-voices", 2, "--attack", 0.5, "--release", 2.5, "--mute-paused")
+        l = self.mk("--pitch-range", "0.9-1.1", "--volume-range-db=-2-0", "--no-repeat", "--dist", "0-30", "--max-voices", 2, "--attack", 0.5, "--release", 2.5, "--mute-paused")
         _, r = run("validate", l)
         self.assertEqual(r["warnings"], [])
         _, t = run("doc", l, "--kind", "impl")
