@@ -231,6 +231,36 @@ class Provenance(Base):
         self.assertIn("Ann", out.read_text(encoding="utf-8"))
 
 
+class PlaybackContract(Base):
+    def mk(self, *extra):
+        l = self.d / "s.json"
+        run("init", l, "--project", "p", "--use", "game", "--commercial", "no", "--force")
+        self.assertEqual(run("add", l, "hit", "--event", "Hit", "--kind", "one-shot", "--length", 0.5, "--variations", 4, "--spatial", "3D", *extra)[0], 0)
+        return l
+
+    def test_bare_sound_warns(self):
+        _, r = run("validate", self.mk())
+        w = " ".join(r["warnings"])
+        self.assertIn("NO_REPEAT_RULE", w)
+        self.assertIn("NO_DISTANCE", w)
+
+    def test_flags_clean_and_in_sheet(self):
+        l = self.mk("--pitch-range", "0.9-1.1", "--volume-range-db", "-2-0", "--no-repeat", "--dist", "0-30", "--max-voices", 2, "--attack", 0.5, "--release", 2.5, "--mute-paused")
+        _, r = run("validate", l)
+        self.assertEqual(r["warnings"], [])
+        _, t = run("doc", l, "--kind", "impl")
+        self.assertIn("0.9-1.1", json.dumps(t))
+        self.assertIn("0-30", json.dumps(t))
+
+    def test_range_order_and_loop_cap(self):
+        l = self.mk("--pitch-range", "1.1-0.9", "--no-repeat", "--dist", "0-30")
+        run("add", l, "bed", "--event", "Bed", "--kind", "loop", "--length", 8)
+        _, r = run("validate", l)
+        w = " ".join(r["warnings"])
+        self.assertIn("RANGE_ORDER", w)
+        self.assertIn("NO_VOICE_CAP", w)
+
+
 class Plan(Base):
     def test_matrix(self):
         _, r = run("plan", "--axis", "surface=6", "--axis", "force=3", "--variations", 4, "--budget", 50)

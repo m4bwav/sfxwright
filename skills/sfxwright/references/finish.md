@@ -30,4 +30,6 @@ Loudness specs measure whole mixes: EBU R128 -23 LUFS, -1 dBTP; ATSC A/85 -24 LK
 - **WebAudio (browser games):** keep the last target set on each AudioParam and call `setTargetAtTime` only when the new value differs by more than 1%. Per-frame calls with the same value pile up automation events and cost CPU for no change.
 - **Wwise:** random containers with avoid-repeat, per-trigger randomizers.
 
+Playback contract per sound: `add ... --pitch-range 0.9-1.1 --volume-range-db -2-0 --no-repeat --dist 0-30 --max-voices 2 --interval 0.2-0.7 --attack 0.5 --release 2.5 --mute-paused`. Start points seen in one shipped game's data: pitch 0.9-1.1 for impacts, 0.95-1.05 for UI and voices, a cap of 1 or 2 voices on loops, a random replay interval for non-looping beds so they never repeat exactly, fades of a few seconds. Unheard here; judge by ear. `validate` warns NO_REPEAT_RULE, NO_DISTANCE, NO_VOICE_CAP and RANGE_ORDER.
+
 `doc --kind impl` writes the sheet. `budget` estimates size and finds removable silence and fake stereo.
